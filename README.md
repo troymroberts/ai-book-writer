@@ -51,6 +51,69 @@ if __name__ == "__main__":
     main()
 ```
 
+2. Validate LLM connection:
+```python
+from llm.factory import LLMFactory
+
+# Test connection to configured LLM
+if LLMFactory.test_connection():
+    print("Connection successful!")
+else:
+    print("Connection failed. Check your configuration.")
+```
+
+2. Custom initial prompt:
+
+## Prompt Templates
+
+The system supports template-based prompts for more structured generation. Templates allow you to define reusable prompt patterns with variables.
+
+### Template Syntax
+
+Templates use Python's format string syntax with named placeholders:
+```
+{placeholder_name}
+```
+
+Example template:
+```
+Write a story about {character} who lives in {location} and wants to {goal}.
+```
+
+### Using Templates
+
+1. Create a template configuration:
+```python
+template = "Write a story about {character} who lives in {location} and wants to {goal}."
+variables = {
+    "character": "a young wizard",
+    "location": "a magical forest",
+    "goal": "find the lost artifact"
+}
+```
+
+2. Use with LLM generation:
+```python
+from llm.factory import LLMFactory
+
+llm = LLMFactory.create_llm(config)
+result = llm.generate_with_template(template, variables)
+```
+
+### Template Validation
+
+The system validates templates before use:
+- All placeholders must have corresponding variables
+- Template syntax must be valid
+- Variables must be strings or convertible to strings
+
+### Advanced Features
+
+- Nested templates (templates within templates)
+- Default values for optional variables
+- Template inheritance and composition
+- Automatic variable type conversion
+
 2. Custom initial prompt:
 ```python
 from config import get_config
@@ -80,12 +143,47 @@ book_gen.generate_book(outline)
 
 ## Configuration
 
-The system can be configured through `config.py`. Key configurations include:
+The system can be configured through `config.py` and environment variables. Key configurations include:
 
-- LLM endpoint URL
-- Number of chapters
-- Agent parameters
-- Output directory settings
+### General Settings
+- OUTPUT_DIR: Directory for generated books (default: "./generated_books")
+- MAX_TOKENS: Maximum length of generated text (default: 4096)
+- TEMPERATURE: Controls creativity (0.0-1.0, default: 0.7)
+
+### Generation Parameters
+- MAX_CHAPTERS: Maximum number of chapters per book (default: 10)
+- MIN_CHAPTER_LENGTH: Minimum words per chapter (default: 1000)
+- MAX_CHAPTER_LENGTH: Maximum words per chapter (default: 5000)
+
+### System Settings
+- LOG_LEVEL: Logging level (DEBUG, INFO, WARNING, ERROR, default: INFO)
+- LOG_FILE: Log file location (default: "book_generator.log")
+
+### Advanced Settings
+- USE_GPU: Enable GPU acceleration if available (default: True)
+- BATCH_SIZE: Number of parallel generations (default: 4)
+- MEMORY_LIMIT: Maximum memory usage (0.0-1.0, default: 0.8)
+
+### LLM Configuration
+- LLM_TYPE: "local" or "litellm" (default: "local")
+- LLM_MODEL: Model name (default: "mistral-nemo-instruct-2407")
+- LOCAL_LLM_URL: URL for local model (default: "http://localhost:1234/v1")
+- LITELLM_API_BASE: Base URL for LiteLLM API
+- LITELLM_API_VERSION: API version for LiteLLM
+
+### Environment Variables
+Set these in your environment or .env file:
+```bash
+# For local models
+export LLM_TYPE=local
+export LOCAL_LLM_URL=http://localhost:1234/v1
+
+# For LiteLLM models
+export LLM_TYPE=litellm
+export LITELLM_API_BASE=https://api.litellm.com
+export LITELLM_API_VERSION=v1
+export OPENAI_API_KEY=your_api_key  # Or other provider key
+```
 
 ## Output Structure
 

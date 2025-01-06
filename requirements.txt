@@ -1,6 +1,10 @@
 # Core dependencies
 autogen>=0.2.0
 typing>=3.7.4
+litellm>=1.0.0
+openai>=1.0.0
+google-generativeai>=0.3.0
+groq>=0.1.0
 
 # Development dependencies
 pytest>=7.0.0  # For testing
