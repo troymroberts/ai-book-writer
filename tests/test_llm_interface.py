@@ -16,7 +16,7 @@ class TestLLMInterface(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures"""
         self.base_url = "http://localhost:1234/v1"
-        self.api_key = "test-key"
+        self.api_key = os.getenv("TEST_API_KEY", "dummy-key-for-testing")
         self.llm = MistralNemoImplementation(self.base_url, self.api_key)
         
         # Setup LiteLLM implementations

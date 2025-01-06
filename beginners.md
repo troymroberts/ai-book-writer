@@ -26,7 +26,7 @@ You'll need an OpenAI API key:
 1. Get your key from [OpenAI](https://platform.openai.com/api-keys)
 2. Set it in your terminal:
 ```bash
-export OPENAI_API_KEY="your-key-here"
+export OPENAI_API_KEY="your-api-key-here"
 ```
 
 ## 3. Test Your Setup
