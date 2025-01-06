@@ -62,6 +62,15 @@ else:
     print("Connection failed. Check your configuration.")
 ```
 
+## Writing Guide
+
+For detailed instructions on creating book outlines and using the generator effectively, see the [Writing Guide](authors.md). This guide covers:
+- Creating custom outlines
+- Structuring chapters
+- Using templates
+- Configuring LLM settings
+- Best practices for book generation
+
 2. Custom initial prompt:
 
 ## Prompt Templates

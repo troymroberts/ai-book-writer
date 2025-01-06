@@ -27,7 +27,15 @@ class BookGenerator:
         content = content.strip()
         
         return content
-    
+
+    def _generate_table_of_contents(self):
+        """Generate a table of contents file from the outline"""
+        toc_path = os.path.join(self.output_dir, "toc.txt")
+        with open(toc_path, "w") as f:
+            f.write("Table of Contents\n\n")
+            for chapter in sorted(self.outline, key=lambda x: x['chapter_number']):
+                f.write(f"Chapter {chapter['chapter_number']}: {chapter['title']}\n")
+        print(f"✓ Generated table of contents at {toc_path}")
 
     def initiate_group_chat(self) -> autogen.GroupChat:
         """Create a new group chat for the agents with improved speaking order"""
@@ -324,6 +332,9 @@ Keep it simple and direct."""
         
         # Sort outline by chapter number
         sorted_outline = sorted(outline, key=lambda x: x["chapter_number"])
+        
+        # Generate table of contents
+        self._generate_table_of_contents()
         
         for chapter in sorted_outline:
             chapter_number = chapter["chapter_number"]

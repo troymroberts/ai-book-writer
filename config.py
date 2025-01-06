@@ -9,7 +9,7 @@ MAX_TOKENS = 4096  # Maximum length of generated text
 TEMPERATURE = 0.7  # Controls creativity (0.0-1.0)
 
 # Generation Parameters
-MAX_CHAPTERS = 10  # Maximum number of chapters per book
+MAX_CHAPTERS = 2  # Maximum number of chapters per book
 MIN_CHAPTER_LENGTH = 1000  # Minimum words per chapter
 MAX_CHAPTER_LENGTH = 5000  # Maximum words per chapter
 
@@ -21,6 +21,7 @@ LOG_FILE = "book_generator.log"  # Log file location
 USE_GPU = True  # Enable GPU acceleration if available
 BATCH_SIZE = 4  # Number of parallel generations
 MEMORY_LIMIT = 0.8  # Maximum memory usage (0.0-1.0)
+GENERATE_TOC = False  # Generate table of contents file
 
 from llm.factory import LLMFactory
 from llm.prompt import PromptConfig
