@@ -228,6 +228,23 @@ pytest
 ```
 6. Submit a pull request
 
+### Release Process
+
+The project uses semantic versioning (vMAJOR.MINOR.PATCH). To create a new release:
+
+1. Ensure all changes are committed
+2. Run the release script:
+```bash
+./tag_release.sh
+```
+
+This will:
+- Automatically increment the patch version
+- Create a new git tag
+- Push the tag to the remote repository
+
+For major or minor version bumps, manually edit the script to adjust the version number accordingly.
+
 ## Error Handling
 
 The system includes robust error handling:
