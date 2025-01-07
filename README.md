@@ -175,23 +175,61 @@ The system can be configured through `config.py` and environment variables. Key 
 
 ### LLM Configuration
 - LLM_TYPE: "local" or "litellm" (default: "local")
-- LLM_MODEL: Model name (default: "mistral-nemo-instruct-2407")
+- LLM_MODEL: Model name with provider prefix (see below)
 - LOCAL_LLM_URL: URL for local model (default: "http://localhost:1234/v1")
 - LITELLM_API_BASE: Base URL for LiteLLM API
 - LITELLM_API_VERSION: API version for LiteLLM
 
 ### Environment Variables
 Set these in your environment or .env file:
+
+1. Choose LLM Type:
 ```bash
 # For local models
 export LLM_TYPE=local
 export LOCAL_LLM_URL=http://localhost:1234/v1
 
-# For LiteLLM models
+# For cloud models
 export LLM_TYPE=litellm
-export LITELLM_API_BASE=https://api.litellm.com
-export LITELLM_API_VERSION=v1
-export OPENAI_API_KEY=your_api_key  # Or other provider key
+export LITELLM_API_BASE=https://api.litellm.com  # Optional
+export LITELLM_API_VERSION=v1  # Optional
+```
+
+2. Set Model and API Key:
+
+For OpenAI models:
+```bash
+export LLM_MODEL="openai/gpt-4"  # or openai/gpt-3.5-turbo
+export OPENAI_API_KEY="your-api-key"
+```
+
+For DeepSeek models:
+```bash
+export LLM_MODEL="deepseek/deepseek-coder"
+export DEEPSEEK_API_KEY="your-api-key"
+```
+
+For Gemini models:
+```bash
+export LLM_MODEL="gemini/gemini-pro"
+export GEMINI_API_KEY="your-api-key"
+```
+
+For Groq models:
+```bash
+export LLM_MODEL="groq/mixtral-8x7b-32768"
+export GROQ_API_KEY="your-api-key"
+```
+
+For local models:
+```bash
+export LLM_MODEL="mistral-nemo-instruct-2407"  # No prefix needed for local models
+```
+
+3. Optional: Configure Fallback Models:
+```bash
+# Comma-separated list of fallback models
+export LLM_FALLBACK_MODELS="openai/gpt-3.5-turbo,deepseek/deepseek-coder"
 ```
 
 ## Output Structure
