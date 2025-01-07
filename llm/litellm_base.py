@@ -1,5 +1,5 @@
 from typing import Generator, Optional
-from litellm import completion
+import litellm
 from .interface import LLMInterface
 
 class LiteLLMBase(LLMInterface):
@@ -13,7 +13,7 @@ class LiteLLMBase(LLMInterface):
         
     def generate(self, prompt: str) -> str:
         """Generate text from a prompt"""
-        response = completion(
+        response = litellm.completion(
             model=self.model,
             messages=[{"content": prompt, "role": "user"}],
             api_key=self.api_key,
@@ -24,7 +24,7 @@ class LiteLLMBase(LLMInterface):
     
     def stream(self, prompt: str) -> Generator[str, None, None]:
         """Stream text generation from a prompt"""
-        response = completion(
+        response = litellm.completion(
             model=self.model,
             messages=[{"content": prompt, "role": "user"}],
             api_key=self.api_key,
@@ -48,13 +48,13 @@ class LiteLLMBase(LLMInterface):
         """Test connection to the LLM service"""
         try:
             # Attempt a simple API call
-            response = completion(
+            response = litellm.completion(
                 model=self.model,
                 messages=[{"content": "test", "role": "user"}],
                 api_key=self.api_key,
                 base_url=self.base_url,
                 max_tokens=1
             )
-            return response.choices[0].message.content is not None
+            return True
         except Exception:
             return False

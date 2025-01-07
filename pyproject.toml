@@ -1,3 +1,17 @@
+[project]
+name = "ai-book-writer"
+version = "0.1.0"
+description = "AI-powered book writing assistant"
+authors = [
+    { name="Tosin Akinosho", email="tosin@example.com" }
+]
+dependencies = []
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["book_output*", "tests*"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --cov=./ --cov-report=term-missing"

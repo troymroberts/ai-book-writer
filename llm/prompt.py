@@ -12,9 +12,17 @@ class PromptConfig:
         Args:
             template: The prompt template string
             variables: Dictionary of template variables and their values
+            
+        Raises:
+            ValueError: If template is invalid
         """
         self.template = template
         self.variables = variables or {}
+        
+        # Validate template on initialization
+        errors = self.validate()
+        if errors:
+            raise ValueError(f"Invalid template: {', '.join(errors)}")
         
     def render(self) -> str:
         """Render the prompt template with variables"""
