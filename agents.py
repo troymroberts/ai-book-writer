@@ -1,14 +1,79 @@
 """Define the agents used in the book generation system with improved context management"""
 import autogen
 from typing import Dict, List, Optional
+from llm.factory import LLMFactory
+from llm.deepseek_client import DeepSeekClient
+from config import get_config
 
 class BookAgents:
-    def __init__(self, agent_config: Dict, outline: Optional[List[Dict]] = None):
-        """Initialize agents with book outline context"""
-        self.agent_config = agent_config
+    def __init__(self, agent_config: Dict, outline: Optional[List[Dict]] = None, genre_config: Optional[Dict] = None):
+        """Initialize agents with book outline context and genre configuration"""
+        self.agent_config = self._prepare_autogen_config(agent_config)
         self.outline = outline
+        self.genre_config = genre_config or {}
         self.world_elements = {}  # Track described locations/elements
         self.character_developments = {}  # Track character arcs
+
+    def _prepare_autogen_config(self, config: Dict) -> Dict:
+        """Prepare configuration for autogen compatibility"""
+        # Convert config to dict if it's a Pydantic model
+        if hasattr(config, 'dict'):
+            config = config.dict()
+            # Get the LLM config directly
+        llm_config = get_config()
+        
+        # Initialize config_list with the LLM configuration
+        config_list = [{
+            "model": llm_config["model"],
+            "api_key": llm_config.get("api_key"),
+            "base_url": llm_config["base_url"],
+            "model_client_cls": "DeepSeekClient",
+            "model_kwargs": {}
+        }]
+        
+        # Preserve all top-level config parameters while overriding config_list
+        return {
+            **config,  # Preserve original config parameters
+            "config_list": config_list,
+            "model_client_cls": DeepSeekClient  # Register the actual class
+        }
+
+    def _get_genre_style_instructions(self) -> str:
+        """Generate style instructions based on genre configuration"""
+        if not self.genre_config:
+            return ""
+            
+        style_elements = []
+        
+        # Writing style
+        if style := self.genre_config.get('WRITING_STYLE'):
+            style_elements.append(f"Use {style} writing style")
+            
+        # Narrative perspective
+        if narrative := self.genre_config.get('NARRATIVE_STYLE'):
+            style_elements.append(f"Write in {narrative} perspective")
+            
+        # Pacing
+        if pacing := self.genre_config.get('PACING_SPEED'):
+            pace_desc = "slower" if float(pacing) < 0.5 else "faster"
+            style_elements.append(f"Maintain {pace_desc} pacing")
+            
+        # Description depth
+        if depth := self.genre_config.get('DESCRIPTIVE_DEPTH'):
+            depth_desc = "detailed" if float(depth) > 0.7 else "concise"
+            style_elements.append(f"Use {depth_desc} descriptions")
+            
+        # Special genre features
+        for key, value in self.genre_config.items():
+            if key.endswith('_DEPTH') and key not in ['DESCRIPTIVE_DEPTH']:
+                feature = key.replace('_DEPTH', '').lower().replace('_', ' ')
+                if float(value) > 0.7:
+                    style_elements.append(f"Emphasize {feature}")
+                    
+        return "\n".join([
+            "\nGenre-Specific Style Instructions:",
+            *[f"- {element}" for element in style_elements]
+        ])
         
     def _format_outline_context(self) -> str:
         """Format the book outline into a readable context"""
@@ -153,14 +218,12 @@ class BookAgents:
         )
 
         # Writer: Generates the actual prose
-        writer = autogen.AssistantAgent(
-            name="writer",
-            system_message=f"""You are an expert creative writer who brings scenes to life.
+        writer_message = f"""You are an expert creative writer who brings scenes to life.
             
-            Book Context:
-            {outline_context}
-            
-            Your focus:
+        Book Context:
+        {outline_context}
+        
+        Your focus:
             1. Write according to the outlined plot points
             2. Maintain consistent character voices
             3. Incorporate world-building details
@@ -171,8 +234,14 @@ class BookAgents:
             8. Do not cut off the scene, make sure it has a proper ending
             9. Add a lot of details, and describe the environment and characters where it makes sense
             
-            Always reference the outline and previous content.
-            Mark drafts with 'SCENE:' and final versions with 'SCENE FINAL:'""",
+        Always reference the outline and previous content.
+        Mark drafts with 'SCENE:' and final versions with 'SCENE FINAL:'
+        
+        {self._get_genre_style_instructions()}"""
+
+        writer = autogen.AssistantAgent(
+            name="writer",
+            system_message=writer_message,
             llm_config=self.agent_config,
         )
 
@@ -211,6 +280,10 @@ class BookAgents:
                 "use_docker": False
             }
         )
+
+        # Register the DeepSeek client with all agents
+        for agent in [memory_keeper, story_planner, outline_creator, world_builder, writer, editor]:
+            agent.register_model_client(model_client_cls=DeepSeekClient)
 
         return {
             "story_planner": story_planner,

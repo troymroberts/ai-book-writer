@@ -4,6 +4,12 @@ from typing import Dict, List, Optional
 import os
 import time
 import re
+import logging
+
+logger = logging.getLogger(__name__)
+import logging
+
+logger = logging.getLogger(__name__)
 
 class BookGenerator:
     def __init__(self, agents: Dict[str, autogen.ConversableAgent], agent_config: Dict, outline: List[Dict]):
@@ -35,7 +41,7 @@ class BookGenerator:
             f.write("Table of Contents\n\n")
             for chapter in sorted(self.outline, key=lambda x: x['chapter_number']):
                 f.write(f"Chapter {chapter['chapter_number']}: {chapter['title']}\n")
-        print(f"✓ Generated table of contents at {toc_path}")
+        logger.info(f"Generated table of contents at {toc_path}")
 
     def initiate_group_chat(self) -> autogen.GroupChat:
         """Create a new group chat for the agents with improved speaking order"""
@@ -74,7 +80,7 @@ class BookGenerator:
 
     def _verify_chapter_complete(self, messages: List[Dict]) -> bool:
         """Verify chapter completion by analyzing entire conversation context"""
-        print("******************** VERIFYING CHAPTER COMPLETION ****************")
+        logger.debug("Verifying chapter completion")
         current_chapter = None
         chapter_content = None
         sequence_complete = {
@@ -109,10 +115,9 @@ class BookGenerator:
             if "**Confirmation:**" in content and "successfully" in content:
                 sequence_complete['confirmation'] = True
 
-            #print all sequence_complete flags
-            print("******************** SEQUENCE COMPLETE **************", sequence_complete)
-            print("******************** CURRENT_CHAPTER ****************", current_chapter)
-            print("******************** CHAPTER_CONTENT ****************", chapter_content)
+            logger.debug(f"Sequence complete: {sequence_complete}")
+            logger.debug(f"Current chapter: {current_chapter}")
+            logger.debug(f"Chapter content: {chapter_content}")
         
         # Verify all steps completed and content exists
         if all(sequence_complete.values()) and current_chapter and chapter_content:
@@ -136,7 +141,8 @@ class BookGenerator:
 
     def generate_chapter(self, chapter_number: int, prompt: str) -> None:
         """Generate a single chapter with completion verification"""
-        print(f"\nGenerating Chapter {chapter_number}...")
+        logger.info(f"Generating Chapter {chapter_number}")
+        logger.debug(f"Chapter prompt: {prompt[:200]}...")  # Log first 200 chars of prompt
         
         try:
             # Create group chat with reduced rounds
@@ -180,18 +186,21 @@ class BookGenerator:
             )
 
             if not self._verify_chapter_complete(groupchat.messages):
+                logger.debug(f"Chapter {chapter_number} verification failed")
                 raise ValueError(f"Chapter {chapter_number} generation incomplete")
         
             self._process_chapter_results(chapter_number, groupchat.messages)
             chapter_file = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
+                logger.debug(f"Chapter file missing: {chapter_file}")
                 raise FileNotFoundError(f"Chapter {chapter_number} file not created")
         
             completion_msg = f"Chapter {chapter_number} is complete. Proceed with next chapter."
             self.agents["user_proxy"].send(completion_msg, manager)
             
         except Exception as e:
-            print(f"Error in chapter {chapter_number}: {str(e)}")
+            logger.error(f"Error in chapter {chapter_number}: {str(e)}")
+            logger.debug(f"Chapter {chapter_number} error context: {prompt[:200]}...")
             self._handle_chapter_generation_failure(chapter_number, prompt)
 
     def _extract_final_scene(self, messages: List[Dict]) -> Optional[str]:
@@ -221,7 +230,7 @@ class BookGenerator:
 
     def _handle_chapter_generation_failure(self, chapter_number: int, prompt: str) -> None:
         """Handle failed chapter generation with simplified retry"""
-        print(f"Attempting simplified retry for Chapter {chapter_number}...")
+        logger.warning(f"Attempting simplified retry for Chapter {chapter_number}")
         
         try:
             # Create a new group chat with just essential agents
@@ -259,8 +268,9 @@ Keep it simple and direct."""
             self._process_chapter_results(chapter_number, retry_groupchat.messages)
             
         except Exception as e:
-            print(f"Error in retry attempt for Chapter {chapter_number}: {str(e)}")
-            print("Unable to generate chapter content after retry")
+            logger.error(f"Error in retry attempt for Chapter {chapter_number}: {str(e)}")
+            logger.error("Unable to generate chapter content after retry")
+            raise
 
     def _process_chapter_results(self, chapter_number: int, messages: List[Dict]) -> None:
         """Process and save chapter results, updating memory"""
@@ -290,11 +300,11 @@ Keep it simple and direct."""
             self._save_chapter(chapter_number, messages)
             
         except Exception as e:
-            print(f"Error processing chapter results: {str(e)}")
+            logger.error(f"Error processing chapter results: {str(e)}")
             raise
 
     def _save_chapter(self, chapter_number: int, messages: List[Dict]) -> None:
-        print(f"\nSaving Chapter {chapter_number}")
+        logger.info(f"Saving Chapter {chapter_number}")
         try:
             chapter_content = self._extract_final_scene(messages)
             if not chapter_content:
@@ -319,16 +329,16 @@ Keep it simple and direct."""
                 if len(saved_content.strip()) == 0:
                     raise IOError(f"File {filename} is empty")
                     
-            print(f"✓ Saved to: {filename}")
+            logger.info(f"Saved chapter to: {filename}")
             
         except Exception as e:
-            print(f"Error saving chapter: {str(e)}")
+            logger.error(f"Error saving chapter: {str(e)}")
             raise
 
     def generate_book(self, outline: List[Dict]) -> None:
         """Generate the book with strict chapter sequencing"""
-        print("\nStarting Book Generation...")
-        print(f"Total chapters: {len(outline)}")
+        logger.info("Starting book generation")
+        logger.info(f"Total chapters: {len(outline)}")
         
         # Sort outline by chapter number
         sorted_outline = sorted(outline, key=lambda x: x["chapter_number"])
@@ -343,46 +353,50 @@ Keep it simple and direct."""
             if chapter_number > 1:
                 prev_file = os.path.join(self.output_dir, f"chapter_{chapter_number-1:02d}.txt")
                 if not os.path.exists(prev_file):
-                    print(f"Previous chapter {chapter_number-1} not found. Stopping.")
+                    logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                     break
                     
                 # Verify previous chapter content
                 with open(prev_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                     if not self._verify_chapter_content(content, chapter_number-1):
-                        print(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
+                        logger.error(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
                         break
             
             # Generate current chapter
-            print(f"\n{'='*20} Chapter {chapter_number} {'='*20}")
+            logger.info(f"Starting Chapter {chapter_number}")
             self.generate_chapter(chapter_number, chapter["prompt"])
             
             # Verify current chapter
             chapter_file = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
-                print(f"Failed to generate chapter {chapter_number}")
+                logger.error(f"Failed to generate chapter {chapter_number}")
                 break
                 
             with open(chapter_file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 if not self._verify_chapter_content(content, chapter_number):
-                    print(f"Chapter {chapter_number} content invalid")
+                    logger.error(f"Chapter {chapter_number} content invalid")
                     break
                     
-            print(f"✓ Chapter {chapter_number} complete")
+            logger.info(f"Chapter {chapter_number} complete")
             time.sleep(5)
 
     def _verify_chapter_content(self, content: str, chapter_number: int) -> bool:
         """Verify chapter content is valid"""
         if not content:
+            logger.debug(f"Chapter {chapter_number} content is empty")
             return False
             
         # Check for chapter header
         if f"Chapter {chapter_number}" not in content:
+            logger.debug(f"Chapter {chapter_number} header missing")
             return False
             
         # Ensure content isn't just metadata
         lines = content.split('\n')
         content_lines = [line for line in lines if line.strip() and 'MEMORY UPDATE:' not in line]
         
-        return len(content_lines) >= 3  # At least chapter header + 2 content lines
+        valid = len(content_lines) >= 3  # At least chapter header + 2 content lines
+        logger.debug(f"Chapter {chapter_number} content validation: {valid}")
+        return valid

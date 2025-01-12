@@ -1,0 +1,12 @@
+Metadata-Version: 2.2
+Name: ai-book-writer
+Version: 0.1.0
+Summary: AI-powered book writing assistant
+Author-email: Tosin Akinosho <tosin@example.com>
+Requires-Python: >=3.8
+Requires-Dist: autogen==0.6.1
+Requires-Dist: typing==3.7.4.3
+Requires-Dist: litellm==1.57.1
+Requires-Dist: openai==1.58.1
+Requires-Dist: google-generativeai==0.8.3
+Requires-Dist: groq==0.13.1

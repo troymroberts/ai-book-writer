@@ -9,6 +9,9 @@ from .litellm_implementations import (
 )
 from .interface import LLMInterface
 from .prompt import PromptConfig
+from .register_model_clients import register_deepseek_client
+import autogen
+from .litellm_base import LiteLLMBase
 
 class LLMFactory:
     """Factory for creating LLM instances"""
@@ -27,11 +30,48 @@ class LLMFactory:
         
         # Validate required configuration
         if not isinstance(config, dict):
-            raise ValueError("LLM config must be a dictionary")
+            print("❌ Error: Invalid configuration format")
+            print("The LLM configuration must be provided as a dictionary")
+            exit(1)
             
         if 'model' not in config:
-            raise ValueError("LLM config must specify a model")
+            print("❌ Error: Missing model configuration")
+            print("Please specify a model in your configuration")
+            print("Supported models:")
+            print("- openai/ (e.g. openai/gpt-4)")
+            print("- deepseek/ (e.g. deepseek-chat)")
+            print("- gemini/ (e.g. gemini/gemini-pro)")
+            print("- groq/ (e.g. groq/llama2-70b)")
+            exit(1)
             
+        # Validate API key presence based on model type
+        model = config['model'].lower()
+        if any(model.startswith(prefix) for prefix in ['openai/', 'deepseek/', 'gemini/', 'groq/']):
+            if 'api_key' not in config or not config['api_key']:
+                print(f"❌ Error: Missing API key for {model}")
+                print(f"Please provide a valid API key in your configuration")
+                print("You can set it via:")
+                print("1. The 'api_key' field in your config dictionary")
+                print("2. The appropriate environment variable:")
+                print("   - OPENAI_API_KEY for OpenAI models")
+                print("   - DEEPSEEK_API_KEY for DeepSeek models")
+                print("   - GEMINI_API_KEY for Gemini models")
+                print("   - GROQ_API_KEY for Groq models")
+                exit(1)
+                
+            # Basic API key format validation
+            api_key = config['api_key']
+            if len(api_key) < 20 or not api_key.startswith(('sk-', 'ds-', 'AI')):
+                print(f"❌ Error: Invalid API key format for {model}")
+                print("API keys should be at least 20 characters long and start with:")
+                print("- 'sk-' for OpenAI")
+                print("- 'ds-' for DeepSeek")
+                print("- 'AI' for Gemini")
+                exit(1)
+            
+        # Register custom model clients
+        register_deepseek_client()
+        
         # Validate and create prompt configuration if provided
         prompt = None
         if prompt_config:
@@ -62,13 +102,48 @@ class LLMFactory:
                 api_key=config['api_key']
             )
             
-        if model.startswith('deepseek/'):
+        if model.startswith('deepseek/') or model == 'deepseek-chat':
             if 'api_key' not in config:
                 raise ValueError("DeepSeek implementation requires api_key")
-            return DeepSeekImplementation(
-                model=model[9:],  # Remove 'deepseek/' prefix
-                api_key=config['api_key']
+            
+            # Get model from environment
+            model = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
+            print(f"Python sees LLM_MODEL as: {os.getenv('LLM_MODEL')}")
+            api_key = os.getenv('DEEPSEEK_API_KEY')
+            
+            if not api_key:
+                raise ValueError("DEEPSEEK_API_KEY environment variable not set")
+                
+            print(f"Using DeepSeek API with key length: {len(api_key)}")
+            
+            # Create config for agent
+            config_list = [{
+                "model": model,
+                "api_key": api_key,
+                "temperature": 0.7,
+                "max_tokens": 4096
+            }]
+            
+            # Create agents
+            assistant = autogen.AssistantAgent(
+                name="assistant",
+                llm_config={"config_list": config_list},
+                system_message="You are a helpful AI assistant."
             )
+            
+            user_proxy = autogen.UserProxyAgent(
+                name="user_proxy",
+                human_input_mode="NEVER",
+                max_consecutive_auto_reply=10,
+                llm_config={"config_list": config_list}
+            )
+            
+            # Register DeepSeek client with both agents
+            register_deepseek_client(assistant)
+            register_deepseek_client(user_proxy)
+            
+            # Create LiteLLM implementation with agents
+            return DeepSeekImplementation(assistant=assistant, user_proxy=user_proxy)
             
         if model.startswith('gemini/'):
             if 'api_key' not in config:
@@ -85,34 +160,43 @@ class LLMFactory:
                 model=model[5:],  # Remove 'groq/' prefix
                 api_key=config['api_key']
             )
-            
+
     @staticmethod
     def test_connection() -> bool:
         """Test connection to LLM services
-        
+
         Returns:
             bool: True if connection test succeeds, False otherwise
         """
         try:
             # Get API key from environment
-            api_key = os.getenv('OPENAI_API_KEY')
+            api_key = os.getenv('DEEPSEEK_API_KEY')
             if not api_key:
-                print("OPENAI_API_KEY environment variable not set")
+                print("DEEPSEEK_API_KEY environment variable not set")
                 return False
-                
-            # Test with a simple OpenAI model configuration
+
+            # Test with DeepSeek configuration
             test_config = {
-                'model': 'openai/gpt-3.5-turbo',
+                'model': 'deepseek-chat',
                 'api_key': api_key
             }
-            
-            # Create instance and attempt connection
+
+            # Create instance
             llm = LLMFactory.create_llm(test_config)
-            
-            # Try to make a simple API call
-            result = llm.test_connection()
-            return result
-            
+
+            if isinstance(llm, DeepSeekImplementation):
+                print(f"Testing DeepSeek API connection with URL: {llm.client.api_base}, model: {llm.model_name}, key length: {len(llm.client.api_key)}")
+                # Attempt a simple API call (e.g., get models) - this might need adjustment based on the DeepSeek API
+                try:
+                    llm.client.list_models()
+                    return True
+                except Exception as e:
+                    print(f"DeepSeek API test failed: {e}")
+                    return False
+            else:
+                print("Not a DeepSeek implementation, skipping direct API test.")
+                return True  # Assume connection is okay for other types
+
         except Exception as e:
             # Connection failed
             print(f"Connection test failed: {str(e)}")

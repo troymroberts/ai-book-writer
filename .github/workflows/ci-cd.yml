@@ -1,0 +1,119 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+        node-version: [18]
+    services:
+      prometheus:
+        image: prom/prometheus
+        ports:
+          - 9090:9090
+        volumes:
+          - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      grafana:
+        image: grafana/grafana
+        ports:
+          - 3000:3000
+        volumes:
+          - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+          - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install Node.js dependencies
+      run: npm install
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest-cov pytest-xdist
+    
+    - name: Run unit tests
+      run: pytest tests/ --cov=./ --cov-report=xml --junitxml=test-results.xml -n auto
+    
+    - name: Run integration tests
+      run: pytest tests/integration/ --cov=./ --cov-append --junitxml=integration-results.xml
+    
+    - name: Run monitoring tests
+      run: pytest tests/monitoring/ --cov=./ --cov-append --junitxml=monitoring-results.xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          test-results.xml
+          integration-results.xml
+          monitoring-results.xml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build package
+      run: npm run build
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build package
+      run: npm run build
+    
+    - name: Publish to npm
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
