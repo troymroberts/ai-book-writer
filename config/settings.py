@@ -9,7 +9,7 @@ from pydantic import (
     field_serializer
 )
 from pydantic_settings import SettingsConfigDict
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 import re
 from .environments import EnvironmentSettings, detect_environment, get_environment_settings
 
@@ -17,7 +17,7 @@ class LLMSettings(BaseSettings):
     """Configuration for LLM providers and models"""
     
     @field_serializer('openai_api_key', 'deepseek_api_key', 'gemini_api_key', 'groq_api_key', 'o1_api_key', 'gemini_flash_api_key')
-    def serialize_secrets(self, value: SecretStr | None) -> str | None:
+    def serialize_secrets(self, value: Union[SecretStr, None]) -> Union[str, None]:
         """Serialize SecretStr fields for JSON compatibility"""
         return value.get_secret_value() if value else None
     

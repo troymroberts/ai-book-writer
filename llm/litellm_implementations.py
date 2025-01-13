@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any
 import os
 from .litellm_base import LiteLLMBase
+from .deepseek_client import DeepSeekClient
 
 class OpenAIImplementation(LiteLLMBase):
     """Implementation for OpenAI models"""
@@ -16,22 +17,23 @@ class OpenAIImplementation(LiteLLMBase):
 class DeepSeekImplementation(LiteLLMBase):
     """Implementation for DeepSeek models"""
     
-    def __init__(self, assistant, user_proxy):
-        """Initialize with autogen agents"""
-        self.assistant = assistant
-        self.user_proxy = user_proxy
+    def __init__(self, config: Dict, **kwargs):
+        """Initialize with configuration"""
+        super().__init__(
+            model="deepseek-chat",
+            api_key=config.get("api_key"),
+            base_url=config.get("base_url", "https://api.deepseek.com"),
+            **kwargs
+        )
+        self.client = DeepSeekClient(config)
         
     def generate_text(self, prompt: str, **kwargs) -> str:
-        """Generate text using DeepSeek model via autogen"""
-        # Initialize chat between agents
-        self.user_proxy.initiate_chat(
-            self.assistant,
-            message=prompt,
-            clear_history=True
+        """Generate text using DeepSeek model"""
+        response = self.client.generate(
+            prompt=prompt,
+            **kwargs
         )
-        
-        # Return the last message from the assistant
-        return self.assistant.last_message()["content"]
+        return response
         
     def generate_chat_completion(
         self,
@@ -41,24 +43,13 @@ class DeepSeekImplementation(LiteLLMBase):
         **kwargs
     ) -> Dict[str, Any]:
         """Generate chat completion using DeepSeek model"""
-        # Format the conversation for the assistant
-        formatted_prompt = "\n".join([
-            f"{msg['role']}: {msg['content']}"
-            for msg in messages
-        ])
-        
-        # Get response from assistant
-        response = self.generate_text(formatted_prompt)
-        
-        # Format response in chat completion style
-        return {
-            "choices": [{
-                "message": {
-                    "role": "assistant",
-                    "content": response
-                }
-            }]
-        }
+        response = self.client.chat_completion(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs
+        )
+        return response
 
 class GeminiImplementation(LiteLLMBase):
     """Implementation for Google Gemini models"""
