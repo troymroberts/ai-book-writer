@@ -24,9 +24,9 @@ class BookAgents:
         
         # Initialize config_list with the LLM configuration
         config_list = [{
-            "model": llm_config["model"],
+            "model": "deepseek-chat",
             "api_key": llm_config.get("api_key"),
-            "base_url": llm_config["base_url"],
+            "base_url": llm_config.get("base_url"),
             "model_client_cls": "DeepSeekClient",
             "model_kwargs": {}
         }]
