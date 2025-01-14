@@ -37,7 +37,19 @@ MEMORY_LIMIT = 0.8      # Memory usage limit
 GENERATE_TOC = True     # Include table of contents
 
 # Special Genre Features
-RELATIONSHIP_DEPTH = 0.9     # Deep relationship development
-CHEMISTRY_INTENSITY = 0.8    # Strong character chemistry
-ROMANTIC_TENSION = 0.8       # High romantic tension
-EMOTIONAL_PAYOFF = 0.9       # Satisfying emotional resolution
+RELATIONSHIP_DEPTH = 1.0       # Deep, evolving relationship development
+CHEMISTRY_INTENSITY = 0.9      # Intense, believable character chemistry
+ROMANTIC_TENSION = 0.9         # High, well-paced romantic tension
+EMOTIONAL_PAYOFF = 1.0         # Deeply satisfying emotional resolution
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate emotions through nuanced romantic actions, subtle interactions, meaningful gestures, revealing details, physical responses, romantic tension, emotional intimacy, relationship-specific behaviors, and intimate emotional manifestations
+SUBTEXT_NUANCE = 1.0           # Use multi-layered romantic cues, subtle body language, unspoken desires, emotional undercurrents, hidden meanings, romantic tension, emotional depth, relationship complexity, romantic subtext, and character-specific chemistry patterns
+PERSONAL_OPINIONS = 1.0        # Inject deeply personal, emotionally charged romantic perspectives, vulnerabilities, intimate revelations, conflicting feelings, romantic biases, emotional complexity, relationship dynamics, character-specific romantic views, and intricate emotional frameworks
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use character-specific, emotionally revealing intimate language, romantic banter, authentic dialogue, revealing slips, flirtatious expressions, emotional tells, relationship-specific speech, character-specific romantic idioms, and distinctive romantic mannerisms
+LOGICAL_LEAPS = 1.0            # Include emotionally driven, intuitive romantic thinking, heart-led decisions, passionate impulses, intuitive jumps, romantic risks, emotional profiling, relationship-driven choices, character-specific romantic logic, and complex emotional processes
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use complex, emotionally rich romantic expressions, intimate confessions, vulnerable admissions, conflicting interpretations, romantic fantasies, emotional filters, relationship perspectives, character-specific romantic biases, and layered emotional frameworks
+RHETORICAL_TECHNIQUES = 1.0    # Use sophisticated, emotionally resonant romantic metaphors, poetic language, lyrical descriptions, symbolic patterns, romantic imagery, emotional symbolism, relationship motifs, character-specific romantic styles, and innovative emotional elements
+PERSONAL_EXPERIENCES = 1.0     # Include emotionally complex, romantically rich anecdotes, relationship-defining moments, transformative encounters, formative experiences, romantic milestones, emotional growth, relationship evolution, character-specific romantic histories, and pivotal emotional moments
+CHARACTER_DEVELOPMENT = 1.0    # Deep emotional growth through transformative relationships, self-discovery, romantic evolution, shifting perspectives, relationship maturity, emotional development, personal transformation, character-specific romantic challenges, and profound relationship changes
+NATURAL_FLOW = 1.0             # Maintain organic, emotionally-driven romantic progression with authentic relationship rhythms, emotional pacing, well-timed revelations, romantic tension, emotional depth, relationship development, character-specific storytelling, and intricate romantic arcs

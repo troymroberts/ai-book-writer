@@ -144,6 +144,13 @@ def display_startup_info(genre_config, outline):
     input("\nPress Enter to start book generation...")
 
 def main():
+    # Check if genre is selected
+    genre = os.getenv('BOOK_GENRE')
+    if not genre:
+        print("No genre selected. Please run './select_genre.py' first to choose a genre.")
+        print("Example: ./select_genre.py")
+        return
+
     # Get base configuration
     settings = get_settings()
     

@@ -42,3 +42,15 @@ FRIEND_GROUP_DYNAMICS = 0.8    # Strong peer relationships
 FAMILY_DYNAMICS = 0.7          # Important family elements
 COMING_OF_AGE_THEMES = 0.9     # Strong development focus
 CONTEMPORARY_RELEVANCE = 0.8   # Modern teen issues
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate teen emotions through authentic actions, relatable behaviors, meaningful interactions, revealing details, physical responses, social dynamics, emotional authenticity, peer relationships, and age-appropriate manifestations
+SUBTEXT_NUANCE = 1.0           # Use teen-appropriate symbolism, social cues, unspoken feelings, emotional undercurrents, hidden meanings, peer pressure, identity exploration, coming-of-age complexity, social subtext, and character-specific teen experiences
+PERSONAL_OPINIONS = 1.0        # Inject authentic teen perspectives, raw emotions, developing worldviews, social anxieties, hidden insecurities, identity questions, emotional complexity, peer influences, character-specific beliefs, and age-appropriate frameworks
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use authentic teen language, current slang, peer group dialogue, revealing reactions, social expressions, emotional outbursts, age-specific speech patterns, character-specific teen idioms, and distinctive youth mannerisms
+LOGICAL_LEAPS = 1.0            # Include teen-typical reasoning, impulsive decisions, emotional reactions, intuitive connections, social risks, identity exploration, peer-influenced choices, character-specific teen logic, and developing mental processes
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use authentic teen viewpoints, emotional reactions, identity questioning, conflicting feelings, social uncertainties, self-discovery, peer perspectives, character-specific teen biases, and developing emotional frameworks
+RHETORICAL_TECHNIQUES = 1.0    # Use age-appropriate metaphors, relatable references, teen-focused imagery, social symbolism, identity themes, emotional expression, peer-group dynamics, character-specific teen voice, and innovative youth elements
+PERSONAL_EXPERIENCES = 1.0     # Include authentic teen anecdotes, social encounters, identity-forming moments, first experiences, emotional milestones, family dynamics, peer relationships, character-specific teen histories, and pivotal coming-of-age moments
+CHARACTER_DEVELOPMENT = 1.0    # Deep growth through identity formation, self-discovery, social evolution, changing perspectives, emotional maturity, family dynamics, personal transformation, character-specific teen challenges, and profound developmental changes
+NATURAL_FLOW = 1.0             # Maintain organic, teen-paced progression with authentic youth rhythms, emotional intensity, well-timed revelations, social tension, identity development, peer dynamics, character-specific storytelling, and intricate coming-of-age arcs

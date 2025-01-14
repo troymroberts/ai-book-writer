@@ -55,3 +55,15 @@ LANGUAGE_AGNOSTIC = 0.7         # General principles
 PYTHON_EXAMPLES = True          # Include Python code
 JAVA_EXAMPLES = True           # Include Java code
 CPP_EXAMPLES = True            # Include C++ code
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate concepts through practical examples, real-world applications, code demonstrations, visual explanations, step-by-step walkthroughs, debugging scenarios, implementation patterns, algorithmic illustrations, and language-specific implementations
+SUBTEXT_NUANCE = 1.0           # Use technical analogies, programming patterns, algorithmic insights, implementation considerations, optimization techniques, architectural implications, design trade-offs, performance implications, and language-specific nuances
+PERSONAL_OPINIONS = 1.0        # Inject experienced developer perspectives, best practices, optimization strategies, architectural decisions, implementation preferences, debugging approaches, design philosophies, testing methodologies, and language-specific recommendations
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use developer-friendly terminology, programming idioms, technical jargon, debugging terminology, implementation patterns, architectural vocabulary, design terminology, testing language, and language-specific conventions
+LOGICAL_LEAPS = 1.0            # Include algorithmic reasoning, optimization insights, architectural decisions, implementation strategies, debugging approaches, design patterns, testing methodologies, performance considerations, and language-specific thinking
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use developer perspectives, implementation preferences, architectural viewpoints, optimization opinions, debugging insights, design considerations, testing approaches, performance observations, and language-specific experiences
+RHETORICAL_TECHNIQUES = 1.0    # Use technical metaphors, programming analogies, algorithmic examples, implementation illustrations, debugging scenarios, design patterns, testing cases, performance comparisons, and language-specific demonstrations
+PERSONAL_EXPERIENCES = 1.0     # Include real-world development scenarios, implementation challenges, debugging stories, optimization cases, architectural decisions, design choices, testing situations, performance tuning, and language-specific experiences
+CHARACTER_DEVELOPMENT = 1.0    # Show progression from basic to advanced concepts, growing complexity in implementations, evolving architectural understanding, improving debugging skills, expanding design knowledge, and deepening language expertise
+NATURAL_FLOW = 1.0             # Maintain organic progression with concept building, implementation steps, debugging processes, architectural evolution, design development, testing sequences, performance optimization, and language-specific learning curves

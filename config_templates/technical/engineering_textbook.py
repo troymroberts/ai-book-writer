@@ -58,3 +58,15 @@ INDUSTRY_STANDARDS = 0.9       # Professional standards
 UNIT_CONSISTENCY = 0.95        # SI/Imperial unit handling
 CALCULATION_ACCURACY = 0.95    # Numerical precision
 ERROR_ANALYSIS = 0.8          # Uncertainty treatment
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate engineering concepts through practical examples, design cases, technical drawings, simulation results, manufacturing processes, safety protocols, testing procedures, real-world applications, and concept-specific implementations
+SUBTEXT_NUANCE = 1.0           # Use engineering intuition, design insights, technical relationships, practical implications, safety considerations, manufacturing awareness, testing patterns, industry standards, and concept-specific interpretations
+PERSONAL_OPINIONS = 1.0        # Inject engineering insights, design perspectives, technical understanding, practical approaches, safety recommendations, manufacturing strategies, testing methodologies, industry experiences, and concept-specific guidance
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use accessible engineering language, technical terminology, design vocabulary, practical terms, safety protocols, manufacturing dialogue, testing descriptions, industry vernacular, and concept-specific communication
+LOGICAL_LEAPS = 1.0            # Include engineering reasoning, design thinking, technical insights, practical connections, safety logic, manufacturing methodologies, testing approaches, industry standards, and concept-specific problem-solving
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use engineering perspectives, design viewpoints, technical interpretations, practical observations, safety reflections, manufacturing insights, testing approaches, industry understanding, and concept-specific experiences
+RHETORICAL_TECHNIQUES = 1.0    # Use engineering analogies, design metaphors, technical examples, practical illustrations, safety scenarios, manufacturing demonstrations, testing cases, industry comparisons, and concept-specific explanations
+PERSONAL_EXPERIENCES = 1.0     # Include engineering challenges, design breakthroughs, technical realizations, practical applications, safety experiences, manufacturing processes, testing situations, industry insights, and concept-specific learning moments
+CHARACTER_DEVELOPMENT = 1.0    # Show progression from basic to advanced engineering, growing design expertise, evolving technical skills, expanding practical abilities, deepening safety awareness, and engineering maturity
+NATURAL_FLOW = 1.0             # Maintain organic progression with concept building, design development, technical sequences, practical applications, safety integration, manufacturing processes, testing procedures, and concept-specific learning paths

@@ -35,3 +35,15 @@ USE_GPU = True           # Enable GPU for processing
 BATCH_SIZE = 4          # Parallel generation
 MEMORY_LIMIT = 0.8      # Memory usage limit
 GENERATE_TOC = True     # Include table of contents
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate tension through nuanced actions, subtle clues, atmospheric details, revealing behaviors, physical tells, environmental storytelling, psychological tension, investigative details, and character-specific tension indicators
+SUBTEXT_NUANCE = 1.0           # Use multi-layered hints, hidden meanings, misdirection, unreliable perspectives, coded communication, double meanings, psychological depth, narrative complexity, investigative subtext, and character-specific subtext
+PERSONAL_OPINIONS = 1.0        # Inject character-specific investigative biases, personal agendas, conflicting perspectives, hidden motives, emotional stakes, psychological complexity, moral ambiguity, investigative instincts, and character-specific worldviews
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use natural, character-specific dialogue with investigative urgency, tension-filled exchanges, revealing slips, coded language, psychological tells, emotional subtext, investigative jargon, and character-specific speech patterns
+LOGICAL_LEAPS = 1.0            # Include complex investigative reasoning, red herrings, breakthroughs, unexpected connections, intuitive insights, pattern recognition, psychological profiling, deductive leaps, investigative intuition, and character-specific reasoning styles
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use nuanced character perceptions, biases, unreliable narration, shifting perspectives, personal interpretations, conflicting accounts, psychological filters, emotional biases, investigative hunches, and character-specific cognitive patterns
+RHETORICAL_TECHNIQUES = 1.0    # Use sophisticated suspenseful metaphors, foreshadowing, dramatic irony, tension-building devices, symbolic clues, narrative misdirection, psychological symbolism, thematic foreshadowing, investigative motifs, and character-specific narrative styles
+PERSONAL_EXPERIENCES = 1.0     # Include detailed character backstories, hidden motivations, personal stakes, formative events, psychological triggers, buried secrets, traumatic experiences, emotional baggage, investigative expertise, and character-specific formative experiences
+CHARACTER_DEVELOPMENT = 1.0    # Characters undergo significant transformation through solving the mystery, with evolving motivations, shifting alliances, personal revelations, psychological growth, moral evolution, investigative skills, and character-specific development arcs
+NATURAL_FLOW = 1.0             # Maintain organic, tension-driven progression with strategic pacing, escalating suspense, well-timed revelations, narrative momentum, psychological pacing, thematic development, investigative rhythm, and character-specific narrative flow

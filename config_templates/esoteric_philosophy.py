@@ -45,3 +45,15 @@ SYMBOLIC_LAYERS = 0.9         # Multiple layers of meaning
 MYSTERY_TRADITION_AUTH = 0.9  # Authentic mystery traditions
 SACRED_GEOMETRY = 0.8         # Sacred geometric principles
 NUMEROLOGICAL_SIGNIFICANCE = 0.8  # Numerical symbolism
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate esoteric concepts through symbolic actions, initiatory experiences, ritual practices, hermetic manifestations, alchemical processes, mystical encounters, occult phenomena, traditional wisdom, and tradition-specific expressions
+SUBTEXT_NUANCE = 1.0           # Use hermetic symbolism, alchemical metaphors, kabbalistic references, occult undertones, mystical insights, initiatory wisdom, esoteric depth, symbolic complexity, traditional nuances, and mystery-specific interpretations
+PERSONAL_OPINIONS = 1.0        # Inject traditionally-informed perspectives, esoteric insights, hermetic viewpoints, mystical interpretations, occult understanding, initiatory wisdom, symbolic frameworks, alchemical considerations, and tradition-specific beliefs
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use tradition-specific terminology, esoteric language, hermetic vernacular, mystical dialogue, occult terms, initiatory phrases, symbolic references, alchemical expressions, and mystery-specific communication
+LOGICAL_LEAPS = 1.0            # Include hermetic reasoning, esoteric insights, symbolic connections, mystical understanding, occult deduction, initiatory analysis, traditional wisdom, alchemical correlations, and tradition-specific thought processes
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use traditionally authentic viewpoints, esoteric perspectives, hermetic interpretations, mystical observations, occult insights, initiatory reflections, symbolic awareness, alchemical understanding, and tradition-specific perceptions
+RHETORICAL_TECHNIQUES = 1.0    # Use hermetic metaphors, esoteric allegories, symbolic imagery, mystical references, occult motifs, initiatory devices, traditional patterns, alchemical symbolism, and tradition-specific literary styles
+PERSONAL_EXPERIENCES = 1.0     # Include authentic initiatory experiences, esoteric journeys, hermetic practices, mystical encounters, occult observations, symbolic revelations, alchemical transformations, traditional insights, and tradition-specific life events
+CHARACTER_DEVELOPMENT = 1.0    # Deep initiatory growth through esoteric understanding, hermetic wisdom, mystical insight, occult knowledge, symbolic interpretation, alchemical transformation, traditional development, and tradition-specific evolution
+NATURAL_FLOW = 1.0             # Maintain organic progression with initiatory rhythms, esoteric pacing, hermetic authenticity, mystical timing, occult structure, symbolic sequence, alchemical development, and tradition-specific storytelling

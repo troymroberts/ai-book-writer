@@ -62,3 +62,15 @@ MOLECULAR_DIAGRAMS = 0.9       # Structure visualization
 SPECTROSCOPY_DATA = 0.9       # Spectroscopic analysis
 PERIODIC_TRENDS = 0.9         # Periodic table patterns
 SOLUTION_CHEMISTRY = 0.9      # Solution calculations
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate chemical concepts through molecular visualizations, reaction mechanisms, laboratory demonstrations, experimental procedures, practical applications, safety protocols, analytical techniques, structural representations, and concept-specific illustrations
+SUBTEXT_NUANCE = 1.0           # Use chemical intuition, reaction insights, molecular relationships, experimental implications, practical considerations, safety awareness, analytical patterns, structural understanding, and concept-specific interpretations
+PERSONAL_OPINIONS = 1.0        # Inject chemistry insights, laboratory perspectives, reaction understanding, experimental approaches, practical recommendations, safety considerations, analytical strategies, structural insights, and concept-specific guidance
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use accessible chemistry language, laboratory terminology, reaction descriptions, experimental vocabulary, practical terms, safety protocols, analytical dialogue, structural explanations, and concept-specific communication
+LOGICAL_LEAPS = 1.0            # Include chemical reasoning, reaction mechanisms, molecular insights, experimental connections, practical applications, safety logic, analytical methodologies, structural relationships, and concept-specific thinking
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use chemistry perspectives, laboratory viewpoints, reaction interpretations, experimental observations, practical insights, safety reflections, analytical approaches, structural understanding, and concept-specific experiences
+RHETORICAL_TECHNIQUES = 1.0    # Use chemical analogies, molecular metaphors, reaction examples, experimental illustrations, practical demonstrations, safety scenarios, analytical comparisons, structural representations, and concept-specific explanations
+PERSONAL_EXPERIENCES = 1.0     # Include chemistry discovery stories, laboratory challenges, reaction breakthroughs, experimental realizations, practical applications, safety experiences, analytical processes, structural insights, and concept-specific learning moments
+CHARACTER_DEVELOPMENT = 1.0    # Show progression from basic to advanced chemistry, growing molecular understanding, evolving laboratory skills, expanding analytical abilities, deepening practical knowledge, and chemical maturity
+NATURAL_FLOW = 1.0             # Maintain organic progression with concept building, reaction understanding, experimental sequences, analytical development, practical applications, safety integration, and concept-specific learning paths

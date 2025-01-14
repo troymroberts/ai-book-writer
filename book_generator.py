@@ -23,14 +23,16 @@ class BookGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def _clean_chapter_content(self, content: str) -> str:
-        """Clean up chapter content by removing artifacts and chapter numbers"""
-        # Remove chapter number references
-        content = re.sub(r'\*?\s*\(Chapter \d+.*?\)', '', content)
-        content = re.sub(r'\*?\s*Chapter \d+.*?\n', '', content, count=1)
+        """Clean up chapter content while preserving meaningful text"""
+        # Remove chapter number references in parentheses
+        content = re.sub(r'\(Chapter \d+.*?\)', '', content)
         
-        # Clean up any remaining markdown artifacts
-        content = content.replace('*', '')
-        content = content.strip()
+        # Remove markdown artifacts but preserve emphasis
+        content = content.replace('**', '')
+        content = content.replace('__', '')
+        
+        # Remove empty lines and excessive whitespace
+        content = '\n'.join([line.strip() for line in content.split('\n') if line.strip()])
         
         return content
 
@@ -82,7 +84,7 @@ class BookGenerator:
         """Verify chapter completion by analyzing entire conversation context"""
         logger.debug("Verifying chapter completion")
         current_chapter = None
-        chapter_content = None
+        has_final_content = False
         sequence_complete = {
             'memory_update': False,
             'plan': False,
@@ -96,6 +98,7 @@ class BookGenerator:
         # Analyze full conversation
         for msg in messages:
             content = msg.get("content", "")
+            sender = self._get_sender(msg)
             
             # Track chapter number
             if not current_chapter:
@@ -109,22 +112,18 @@ class BookGenerator:
             if "SETTING:" in content: sequence_complete['setting'] = True
             if "SCENE:" in content: sequence_complete['scene'] = True
             if "FEEDBACK:" in content: sequence_complete['feedback'] = True
-            if "SCENE FINAL:" in content:
+            if "SCENE FINAL:" in content and sender in ["writer_final", "writer"]:
                 sequence_complete['scene_final'] = True
-                chapter_content = content.split("SCENE FINAL:")[1].strip()
+                has_final_content = True
             if "**Confirmation:**" in content and "successfully" in content:
                 sequence_complete['confirmation'] = True
 
             logger.debug(f"Sequence complete: {sequence_complete}")
             logger.debug(f"Current chapter: {current_chapter}")
-            logger.debug(f"Chapter content: {chapter_content}")
+            logger.debug(f"Has final content: {has_final_content}")
         
         # Verify all steps completed and content exists
-        if all(sequence_complete.values()) and current_chapter and chapter_content:
-            self._save_chapter(current_chapter, chapter_content)
-            return True
-            
-        return False
+        return all(sequence_complete.values()) and current_chapter and has_final_content
     
     def _prepare_chapter_context(self, chapter_number: int, prompt: str) -> str:
         """Prepare context for chapter generation"""
@@ -205,27 +204,44 @@ class BookGenerator:
 
     def _extract_final_scene(self, messages: List[Dict]) -> Optional[str]:
         """Extract chapter content with improved content detection"""
+        # First try to find SCENE FINAL from writer_final
         for msg in reversed(messages):
             content = msg.get("content", "")
             sender = self._get_sender(msg)
             
-            if sender in ["writer", "writer_final"]:
-                # Handle complete scene content
-                if "SCENE FINAL:" in content:
-                    scene_text = content.split("SCENE FINAL:")[1].strip()
-                    if scene_text:
-                        return scene_text
-                        
-                # Fallback to scene content
-                if "SCENE:" in content:
-                    scene_text = content.split("SCENE:")[1].strip()
-                    if scene_text:
-                        return scene_text
-                        
-                # Handle raw content
-                if len(content.strip()) > 100:  # Minimum content threshold
-                    return content.strip()
-                    
+            if sender == "writer_final" and "SCENE FINAL:" in content:
+                scene_text = content.split("SCENE FINAL:")[1].strip()
+                if scene_text:
+                    # Remove any remaining planning or outline content
+                    scene_lines = []
+                    for line in scene_text.split('\n'):
+                        if not any(marker in line.upper() for marker in [
+                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                            "SETTING:", "TONE:", "PLAN:", "OUTLINE:",
+                            "MEMORY UPDATE:", "FEEDBACK:"
+                        ]):
+                            scene_lines.append(line)
+                    return '\n'.join(scene_lines)
+        
+        # If no SCENE FINAL from writer_final, try writer's SCENE FINAL
+        for msg in reversed(messages):
+            content = msg.get("content", "")
+            sender = self._get_sender(msg)
+            
+            if sender == "writer" and "SCENE FINAL:" in content:
+                scene_text = content.split("SCENE FINAL:")[1].strip()
+                if scene_text:
+                    # Remove any remaining planning or outline content
+                    scene_lines = []
+                    for line in scene_text.split('\n'):
+                        if not any(marker in line.upper() for marker in [
+                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                            "SETTING:", "TONE:", "PLAN:", "OUTLINE:",
+                            "MEMORY UPDATE:", "FEEDBACK:"
+                        ]):
+                            scene_lines.append(line)
+                    return '\n'.join(scene_lines)
+        
         return None
 
     def _handle_chapter_generation_failure(self, chapter_number: int, prompt: str) -> None:
@@ -304,14 +320,61 @@ Keep it simple and direct."""
             raise
 
     def _save_chapter(self, chapter_number: int, messages: List[Dict]) -> None:
+        """Save the final chapter content to a file"""
         logger.info(f"Saving Chapter {chapter_number}")
         try:
-            chapter_content = self._extract_final_scene(messages)
-            if not chapter_content:
-                raise ValueError(f"No content found for Chapter {chapter_number}")
+            # Extract final content from messages
+            final_content = None
+            for msg in reversed(messages):
+                content = msg.get("content", "")
+                sender = self._get_sender(msg)
                 
-            chapter_content = self._clean_chapter_content(chapter_content)
+                if sender == "writer_final" and "SCENE FINAL:" in content:
+                    final_content = content.split("SCENE FINAL:")[1].strip()
+                    break
             
+            if not final_content:
+                # Try getting content from writer if writer_final didn't provide it
+                for msg in reversed(messages):
+                    content = msg.get("content", "")
+                    sender = self._get_sender(msg)
+                    
+                    if sender == "writer" and "SCENE FINAL:" in content:
+                        final_content = content.split("SCENE FINAL:")[1].strip()
+                        break
+            
+            if not final_content:
+                raise ValueError(f"No final content found for Chapter {chapter_number}")
+            
+            # Clean up the content
+            final_content = self._clean_chapter_content(final_content)
+            
+            # Remove metadata sections but preserve content
+            content_sections = final_content.split('---')
+            final_content = '\n\n'.join([
+                section.strip() for section in content_sections 
+                if not any(marker in section.upper() for marker in [
+                    "MEMORY UPDATE:", "FEEDBACK:", "PLAN:", "OUTLINE:"
+                ])
+            ]).strip()
+            
+            # Remove specific metadata lines but keep surrounding content
+            content_lines = []
+            for line in final_content.split('\n'):
+                if not line.strip().startswith((
+                    "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                    "SETTING:", "TONE:", "THE CHAPTER",
+                    "CONTINUES TO", "EXPLORES", "CONCLUDES WITH"
+                )):
+                    content_lines.append(line)
+            
+            final_content = '\n'.join(content_lines).strip()
+            
+            # Ensure minimum content length
+            if len(final_content.split()) < 100:  # At least 100 words
+                raise ValueError("Chapter content too short after cleaning")
+            
+            # Save the content
             filename = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             
             # Create backup if file exists
@@ -319,16 +382,16 @@ Keep it simple and direct."""
                 backup_filename = f"{filename}.backup"
                 import shutil
                 shutil.copy2(filename, backup_filename)
-                
+            
             with open(filename, "w", encoding='utf-8') as f:
-                f.write(f"Chapter {chapter_number}\n\n{chapter_content}")
-                
+                f.write(f"Chapter {chapter_number}\n\n{final_content}")
+            
             # Verify file
             with open(filename, "r", encoding='utf-8') as f:
                 saved_content = f.read()
                 if len(saved_content.strip()) == 0:
                     raise IOError(f"File {filename} is empty")
-                    
+            
             logger.info(f"Saved chapter to: {filename}")
             
         except Exception as e:

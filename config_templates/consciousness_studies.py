@@ -47,3 +47,15 @@ EXPERIENTIAL_DETAIL = 0.9      # Rich experiential descriptions
 THERAPEUTIC_INSIGHT = 0.8      # Psychological healing aspects
 PHENOMENOLOGICAL_DEPTH = 0.9   # Detailed experience analysis
 NEUROSCIENCE_ELEMENTS = 0.7    # Brain-mind connection
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate psychological states through experiential descriptions, altered consciousness, behavioral manifestations, phenomenological details, neurological correlates, transpersonal experiences, emotional processes, cognitive patterns, and consciousness-specific expressions
+SUBTEXT_NUANCE = 1.0           # Use psychological symbolism, unconscious patterns, experiential metaphors, cognitive undertones, transpersonal insights, neurological implications, phenomenological depth, consciousness complexity, therapeutic nuances, and state-specific interpretations
+PERSONAL_OPINIONS = 1.0        # Inject experientially-informed perspectives, psychological insights, consciousness theories, phenomenological interpretations, scientific viewpoints, therapeutic understanding, transpersonal frameworks, neurological considerations, and state-specific beliefs
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use experience-specific terminology, psychological language, consciousness vernacular, therapeutic dialogue, scientific terms, phenomenological descriptions, transpersonal expressions, neurological references, and state-specific communication
+LOGICAL_LEAPS = 1.0            # Include psychological reasoning, consciousness insights, experiential connections, therapeutic understanding, scientific deduction, phenomenological analysis, transpersonal wisdom, neurological correlations, and state-specific thought processes
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use experientially authentic viewpoints, psychological perspectives, consciousness interpretations, phenomenological observations, scientific insights, therapeutic reflections, transpersonal awareness, neurological understanding, and state-specific perceptions
+RHETORICAL_TECHNIQUES = 1.0    # Use psychological metaphors, consciousness allegories, experiential symbolism, scientific references, therapeutic motifs, phenomenological devices, transpersonal imagery, neurological patterns, and state-specific literary styles
+PERSONAL_EXPERIENCES = 1.0     # Include authentic psychological experiences, consciousness journeys, altered states, therapeutic processes, scientific observations, phenomenological encounters, transpersonal transformations, neurological insights, and state-specific life events
+CHARACTER_DEVELOPMENT = 1.0    # Deep psychological growth through consciousness expansion, experiential learning, therapeutic progress, scientific understanding, phenomenological insight, transpersonal development, neurological awareness, and state-specific evolution
+NATURAL_FLOW = 1.0             # Maintain organic progression with psychological rhythms, consciousness pacing, experiential authenticity, therapeutic timing, scientific structure, phenomenological sequence, transpersonal development, and state-specific storytelling

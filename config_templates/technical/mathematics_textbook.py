@@ -60,3 +60,15 @@ DIAGRAM_QUALITY = 0.9          # Mathematical figures
 PROOF_STRUCTURE = 0.95         # Organized proof layout
 INDEX_COMPREHENSIVENESS = 0.9  # Detailed index
 BIBLIOGRAPHY_DEPTH = 0.8       # Reference coverage
+
+# Human Characteristics Settings
+SHOW_DONT_TELL = 1.0           # Demonstrate mathematical concepts through intuitive examples, visual proofs, geometric interpretations, step-by-step derivations, practical applications, problem-solving strategies, theorem illustrations, proof techniques, and concept-specific demonstrations
+SUBTEXT_NUANCE = 1.0           # Use mathematical intuition, proof insights, theoretical connections, conceptual relationships, logical implications, abstract patterns, structural similarities, analytical approaches, and concept-specific interpretations
+PERSONAL_OPINIONS = 1.0        # Inject mathematical insights, proof strategies, problem-solving approaches, conceptual understanding, theoretical perspectives, analytical methods, proof techniques, learning recommendations, and concept-specific guidance
+COLLOQUIAL_EXPRESSIONS = 1.0   # Use accessible mathematical language, intuitive explanations, clear terminology, proof narratives, concept descriptions, theorem interpretations, problem-solving vocabulary, and concept-specific communication
+LOGICAL_LEAPS = 1.0            # Include mathematical reasoning, proof construction, theoretical insights, conceptual connections, analytical thinking, problem-solving strategies, theorem relationships, proof techniques, and concept-specific logic
+SUBJECTIVE_EXPRESSIONS = 1.0   # Use mathematical perspectives, proof approaches, theoretical viewpoints, conceptual interpretations, analytical insights, problem-solving reflections, theorem understanding, and concept-specific experiences
+RHETORICAL_TECHNIQUES = 1.0    # Use mathematical metaphors, proof analogies, theoretical examples, conceptual illustrations, analytical comparisons, problem-solving scenarios, theorem demonstrations, and concept-specific explanations
+PERSONAL_EXPERIENCES = 1.0     # Include mathematical discovery stories, proof development processes, theoretical breakthroughs, conceptual realizations, analytical challenges, problem-solving experiences, theorem insights, and concept-specific learning moments
+CHARACTER_DEVELOPMENT = 1.0    # Show progression from basic to advanced mathematics, growing theoretical understanding, evolving proof skills, expanding problem-solving abilities, deepening conceptual knowledge, and mathematical maturity
+NATURAL_FLOW = 1.0             # Maintain organic progression with concept building, proof development, theoretical connections, problem-solving sequences, analytical development, theorem relationships, and concept-specific learning paths
