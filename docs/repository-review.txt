@@ -1,0 +1,629 @@
+File: .change.log
+Type: Text
+Purpose: Log of changes made to the repository.
+Dependencies/Relationships: None
+Documentation Needs: Consider linking to commit history for more detail.
+
+File: .coverage
+Type: Data
+Purpose: Coverage data for testing.
+Dependencies/Relationships: pytest
+Documentation Needs: Explain how to generate and interpret coverage reports in testing documentation.
+
+File: .env
+Type: Configuration
+Purpose: Stores environment-specific variables.
+Dependencies/Relationships: Used by the application for configuration.
+Documentation Needs: Document the important environment variables and their usage.
+
+File: .gitignore
+Type: Configuration
+Purpose: Specifies intentionally untracked files that Git should ignore.
+Dependencies/Relationships: Git
+Documentation Needs: No specific documentation needed.
+
+File: agents.py
+Type: Python Source Code
+Purpose: Defines agents that interact with LLMs for content generation.
+Dependencies/Relationships: llm/
+Documentation Needs: Explain the different agents and their roles.
+
+File: book_generator.py
+Type: Python Source Code
+Purpose: Main script for generating books using LLMs and templates.
+Dependencies/Relationships: config/, llm/, outline_generator.py, select_genre.py
+Documentation Needs: Detail the book generation process and how to use this script.
+
+File: config.py
+Type: Python Source Code
+Purpose: Handles application configuration and settings.
+Dependencies/Relationships: config/settings.py, config_templates/
+Documentation Needs: Explain how configuration is loaded and managed.
+
+File: coverage.xml
+Type: XML
+Purpose: XML format of coverage data.
+Dependencies/Relationships: .coverage
+Documentation Needs: Reference in testing documentation.
+
+File: env.example
+Type: Text
+Purpose: Example environment variable file.
+Dependencies/Relationships: .env
+Documentation Needs: Reference this file when documenting environment variables.
+
+File: example_outline.txt
+Type: Text
+Purpose: Example of a book outline.
+Dependencies/Relationships: outline_generator.py
+Documentation Needs: Could be used as an example in documentation for outline generation.
+
+File: main.py
+Type: Python Source Code
+Purpose: Likely the main entry point for the application.
+Dependencies/Relationships: Various modules
+Documentation Needs: Describe the application's startup process.
+
+File: outline_generator.py
+Type: Python Source Code
+Purpose: Generates book outlines.
+Dependencies/Relationships: llm/
+Documentation Needs: Explain the outline generation process.
+
+File: package-lock.json
+Type: JSON
+Purpose: Records the exact versions of dependencies used in the node_modules directory.
+Dependencies/Relationships: package.json
+Documentation Needs: No specific documentation needed.
+
+File: package.json
+Type: JSON
+Purpose: Contains metadata about the project, including dependencies and scripts.
+Dependencies/Relationships: None
+Documentation Needs: No specific documentation needed.
+
+File: pinned_requirements.txt
+Type: Text
+Purpose: Lists pinned versions of Python dependencies.
+Dependencies/Relationships: requirements.txt
+Documentation Needs: Explain the difference between this and requirements.txt.
+
+File: pyproject.toml
+Type: TOML
+Purpose: Configuration file for Python build tools.
+Dependencies/Relationships: None
+Documentation Needs: No specific documentation needed.
+
+File: pytest.ini
+Type: Configuration
+Purpose: Configuration file for pytest.
+Dependencies/Relationships: pytest
+Documentation Needs: Document how testing is configured.
+
+File: quickstart.sh
+Type: Shell Script
+Purpose: Likely a script to quickly start or set up the application.
+Dependencies/Relationships: None
+Documentation Needs: Explain the steps performed by this script.
+
+File: README.md
+Type: Markdown
+Purpose: Provides a general overview of the project.
+Dependencies/Relationships: None
+Documentation Needs: Ensure it accurately reflects the current state of the project.
+
+File: requirements.txt
+Type: Text
+Purpose: Lists Python dependencies for the project.
+Dependencies/Relationships: pinned_requirements.txt
+Documentation Needs: Explain how to install dependencies.
+
+File: select_genre.py
+Type: Python Source Code
+Purpose: Script for selecting the genre of the book.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Explain how genre selection works.
+
+File: tag_release.sh
+Type: Shell Script
+Purpose: Script for tagging releases.
+Dependencies/Relationships: Git
+Documentation Needs: Explain the release process.
+
+File: ai_book_writer.egg-info/
+Type: Directory
+Purpose: Contains metadata about the installed package.
+Dependencies/Relationships: Setuptools
+Documentation Needs: No specific documentation needed.
+
+File: book_output/
+Type: Directory
+Purpose: Likely the directory where generated books are stored.
+Dependencies/Relationships: book_generator.py
+Documentation Needs: Explain where generated books are located.
+
+File: config/
+Type: Directory
+Purpose: Contains configuration files.
+Dependencies/Relationships: config.py, config_templates/
+Documentation Needs: Overview of the configuration system.
+
+File: config/__init__.py
+Type: Python Source Code
+Purpose: Makes the config directory a Python package.
+Dependencies/Relationships: None
+Documentation Needs: No specific documentation needed.
+
+File: config/environments.py
+Type: Python Source Code
+Purpose: Defines different configuration environments (e.g., development, production).
+Dependencies/Relationships: config/settings.py
+Documentation Needs: Explain how to use different environments.
+
+File: config/settings.py
+Type: Python Source Code
+Purpose: Stores default application settings.
+Dependencies/Relationships: config.py
+Documentation Needs: Document the available settings.
+
+File: config_templates/
+Type: Directory
+Purpose: Contains templates for different book genres and types.
+Dependencies/Relationships: book_generator.py, select_genre.py
+Documentation Needs: Explain how templates are structured and used.
+
+File: config_templates/comparative_religion.py
+Type: Python Source Code
+Purpose: Template for comparative religion books.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/consciousness_studies.py
+Type: Python Source Code
+Purpose: Template for consciousness studies books.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/esoteric_philosophy.py
+Type: Python Source Code
+Purpose: Template for esoteric philosophy books.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/mysticism.py
+Type: Python Source Code
+Purpose: Template for mysticism books.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/README.md
+Type: Markdown
+Purpose: Provides information about the config_templates directory.
+Dependencies/Relationships: None
+Documentation Needs: Review and ensure it's up-to-date.
+
+File: config_templates/genre/
+Type: Directory
+Purpose: Contains genre-specific templates.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Explain the organization of genre templates.
+
+File: config_templates/genre/fantasy_scifi.py
+Type: Python Source Code
+Purpose: Template for fantasy and sci-fi books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/genre/historical_fiction.py
+Type: Python Source Code
+Purpose: Template for historical fiction books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/genre/literary_fiction.py
+Type: Python Source Code
+Purpose: Template for literary fiction books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/genre/romance.py
+Type: Python Source Code
+Purpose: Template for romance books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/genre/thriller_mystery.py
+Type: Python Source Code
+Purpose: Template for thriller and mystery books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/genre/young_adult.py
+Type: Python Source Code
+Purpose: Template for young adult books.
+Dependencies/Relationships: config_templates/genre/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/
+Type: Directory
+Purpose: Contains technical book templates.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Explain the organization of technical templates.
+
+File: config_templates/technical/chemistry_textbook.py
+Type: Python Source Code
+Purpose: Template for chemistry textbooks.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/computer_science_textbook.py
+Type: Python Source Code
+Purpose: Template for computer science textbooks.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/engineering_textbook.py
+Type: Python Source Code
+Purpose: Template for engineering textbooks.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/gemini_flash.py
+Type: Python Source Code
+Purpose: Template for Gemini Flash technical documentation.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/mathematics_textbook.py
+Type: Python Source Code
+Purpose: Template for mathematics textbooks.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/o1_preview.py
+Type: Python Source Code
+Purpose: Template for O1 Preview technical documentation.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: config_templates/technical/physics_textbook.py
+Type: Python Source Code
+Purpose: Template for physics textbooks.
+Dependencies/Relationships: config_templates/technical/
+Documentation Needs: Document the structure of this template.
+
+File: developerhelp/
+Type: Directory
+Purpose: Contains resources and tools for developers.
+Dependencies/Relationships: None
+Documentation Needs: Explain the contents and purpose of this directory.
+
+File: docs/
+Type: Directory
+Purpose: Contains documentation files.
+Dependencies/Relationships: None
+Documentation Needs: Ensure all documentation is well-organized and up-to-date.
+
+File: docs/agents.md
+Type: Markdown
+Purpose: Documentation for agents.py.
+Dependencies/Relationships: agents.py
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/api_reference.md
+Type: Markdown
+Purpose: Documentation for the API.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/book_generator.md
+Type: Markdown
+Purpose: Documentation for book_generator.py.
+Dependencies/Relationships: book_generator.py
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/config.md
+Type: Markdown
+Purpose: General configuration documentation.
+Dependencies/Relationships: config/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/config_py.md
+Type: Markdown
+Purpose: Documentation for config.py.
+Dependencies/Relationships: config.py
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/config_templates_directory.md
+Type: Markdown
+Purpose: Documentation for the config_templates directory.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/config_templates.md
+Type: Markdown
+Purpose: Documentation for configuration templates.
+Dependencies/Relationships: config_templates/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/contributing.md
+Type: Markdown
+Purpose: Guidelines for contributing to the project.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/deployment.md
+Type: Markdown
+Purpose: Documentation for deploying the application.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/developer_guide.md
+Type: Markdown
+Purpose: Guide for developers.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/environment_variables.md
+Type: Markdown
+Purpose: Documentation for environment variables.
+Dependencies/Relationships: .env, env.example
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/getting_started.md
+Type: Markdown
+Purpose: Guide for getting started with the application.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/llm.md
+Type: Markdown
+Purpose: Documentation for the llm directory.
+Dependencies/Relationships: llm/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/llm_directory.md
+Type: Markdown
+Purpose: Documentation for the llm directory.
+Dependencies/Relationships: llm/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/outline_generator.md
+Type: Markdown
+Purpose: Documentation for outline_generator.py.
+Dependencies/Relationships: outline_generator.py
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/README.md
+Type: Markdown
+Purpose: Main README file for the documentation.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/repository-review.txt
+Type: Text
+Purpose: Review of the repository structure and files.
+Dependencies/Relationships: None
+Documentation Needs: Ensure it accurately reflects the current repository structure.
+
+File: docs/select_genre.md
+Type: Markdown
+Purpose: Documentation for select_genre.py.
+Dependencies/Relationships: select_genre.py
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/testing.md
+Type: Markdown
+Purpose: Documentation for testing.
+Dependencies/Relationships: tests/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/utils.md
+Type: Markdown
+Purpose: Documentation for the utils directory.
+Dependencies/Relationships: utils/
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/architecture/
+Type: Directory
+Purpose: Contains architecture-related documentation.
+Dependencies/Relationships: None
+Documentation Needs: Ensure all architecture documentation is present and accurate.
+
+File: docs/architecture/repomap.md
+Type: Markdown
+Purpose: Visual representation of the repository structure.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/development/
+Type: Directory
+Purpose: Contains development-related documentation.
+Dependencies/Relationships: None
+Documentation Needs: Ensure all development documentation is present and accurate.
+
+File: docs/development/CONTRIBUTORS.md
+Type: Markdown
+Purpose: List of contributors.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/development/dev.md
+Type: Markdown
+Purpose: Development guide.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/development/development.md
+Type: Markdown
+Purpose: Detailed development documentation.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/examples/
+Type: Directory
+Purpose: Contains example files and usage scenarios.
+Dependencies/Relationships: None
+Documentation Needs: Ensure relevant examples are included.
+
+File: docs/guides/
+Type: Directory
+Purpose: Contains user guides.
+Dependencies/Relationships: None
+Documentation Needs: Ensure all user guides are present and accurate.
+
+File: docs/guides/authors.md
+Type: Markdown
+Purpose: Guide for authors.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/guides/beginners.md
+Type: Markdown
+Purpose: Guide for beginners.
+Dependencies/Relationships: None
+Documentation Needs: Review for accuracy and completeness.
+
+File: docs/reference/
+Type: Directory
+Purpose: Contains reference documentation.
+Dependencies/Relationships: None
+Documentation Needs: Ensure all reference documentation is present and accurate.
+
+File: llm/
+Type: Directory
+Purpose: Contains code related to Large Language Models.
+Dependencies/Relationships: None
+Documentation Needs: Document the structure and components of this directory.
+
+File: llm/__init__.py
+Type: Python Source Code
+Purpose: Makes the llm directory a Python package.
+Dependencies/Relationships: None
+Documentation Needs: No specific documentation needed.
+
+File: llm/deepseek_client.py
+Type: Python Source Code
+Purpose: Client for interacting with the DeepSeek LLM.
+Dependencies/Relationships: llm/interface.py
+Documentation Needs: Document how to use this client.
+
+File: llm/factory.py
+Type: Python Source Code
+Purpose: Factory for creating LLM client instances.
+Dependencies/Relationships: llm/interface.py, llm/litellm_implementations.py, llm/deepseek_client.py, llm/mistral_nemo.py
+Documentation Needs: Explain how the factory works and how to register new clients.
+
+File: llm/interface.py
+Type: Python Source Code
+Purpose: Defines the interface for LLM clients.
+Dependencies/Relationships: None
+Documentation Needs: Document the methods and structure of this interface.
+
+File: llm/litellm_base.py
+Type: Python Source Code
+Purpose: Base class for LLM clients using the LiteLLM library.
+Dependencies/Relationships: llm/interface.py
+Documentation Needs: Explain how this base class simplifies LLM integration.
+
+File: llm/litellm_implementations.py
+Type: Python Source Code
+Purpose: Implementations of LLM clients using LiteLLM.
+Dependencies/Relationships: llm/litellm_base.py
+Documentation Needs: Document the specific implementations.
+
+File: llm/mistral_nemo.py
+Type: Python Source Code
+Purpose: Client for interacting with the Mistral-Nemo LLM.
+Dependencies/Relationships: llm/interface.py
+Documentation Needs: Document how to use this client.
+
+File: llm/prompt.py
+Type: Python Source Code
+Purpose: Utilities for managing and constructing prompts.
+Dependencies/Relationships: None
+Documentation Needs: Document the prompt engineering utilities.
+
+File: llm/register_model_clients.py
+Type: Python Source Code
+Purpose: Registers LLM clients with the factory.
+Dependencies/Relationships: llm/factory.py
+Documentation Needs: Explain how to register new LLM clients.
+
+File: tests/
+Type: Directory
+Purpose: Contains test files.
+Dependencies/Relationships: pytest
+Documentation Needs: Overview of the testing strategy.
+
+File: tests/test_agents.py
+Type: Python Source Code
+Purpose: Tests for the agents module.
+Dependencies/Relationships: agents.py, tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/config/
+Type: Directory
+Purpose: Contains test configuration files.
+Dependencies/Relationships: tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/config/test_new_llm_configs.py
+Type: Python Source Code
+Purpose: Tests for new LLM configurations.
+Dependencies/Relationships: config/, tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/config/test_settings.py
+Type: Python Source Code
+Purpose: Tests for the configuration settings.
+Dependencies/Relationships: config/settings.py, tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/llm/
+Type: Directory
+Purpose: Contains test files for the llm directory.
+Dependencies/Relationships: llm/, tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/llm/test_interface.py
+Type: Python Source Code
+Purpose: Tests for the LLM interface.
+Dependencies/Relationships: llm/interface.py, tests/llm/
+Documentation Needs: No specific documentation needed.
+
+File: tests/monitoring/
+Type: Directory
+Purpose: Contains test files for monitoring.
+Dependencies/Relationships: tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/monitoring/test_monitoring.py
+Type: Python Source Code
+Purpose: Tests for monitoring functionalities.
+Dependencies/Relationships: tests/monitoring/
+Documentation Needs: No specific documentation needed.
+
+File: tests/output/
+Type: Directory
+Purpose: Likely contains test output.
+Dependencies/Relationships: tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/utils/
+Type: Directory
+Purpose: Contains test files for the utils directory.
+Dependencies/Relationships: utils/, tests/
+Documentation Needs: No specific documentation needed.
+
+File: tests/utils/test_connection.py
+Type: Python Source Code
+Purpose: Tests for utility connection functions.
+Dependencies/Relationships: utils/test_connection.py, tests/utils/
+Documentation Needs: No specific documentation needed.
+
+File: utils/
+Type: Directory
+Purpose: Contains utility functions and classes.
+Dependencies/Relationships: None
+Documentation Needs: Document the utility modules and their functions.
