@@ -50,19 +50,43 @@ def load_custom_outline(outline_path):
         # Parse the outline into chapter prompts
         chapters = []
         current_chapter = None
+        
         for line in content.split("\n"):
-            if line.startswith("Chapter"):
+            line = line.strip()
+            if line.startswith("### Chapter"):
                 if current_chapter:
                     chapters.append(current_chapter)
+                # Extract chapter number and title
+                title_parts = line.split(":", 1)
+                if len(title_parts) > 1:
+                    title = title_parts[1].strip()
+                else:
+                    title = line.replace("### ", "").strip()
+                
                 current_chapter = {
-                    "title": line.split(":")[1].strip(),
+                    "title": title,
                     "prompt": "",
                     "chapter_number": len(chapters) + 1
                 }
-            elif line.strip() and current_chapter:
-                current_chapter["prompt"] += line + "\n"
+            elif line and current_chapter:
+                # Skip divider lines
+                if not line.startswith("---") and not line == "":
+                    # Handle bullet points and other formatting
+                    if line.startswith("- "):
+                        line = line[2:]  # Remove bullet point
+                    elif line.startswith("**") and line.endswith("**"):
+                        line = line[2:-2]  # Remove bold markers
+                    current_chapter["prompt"] += line + "\n"
+        
+        # Don't forget to add the last chapter
         if current_chapter:
             chapters.append(current_chapter)
+        
+        if not chapters:
+            logger.error("No chapters found in outline")
+            return None
+            
+        logger.info(f"Successfully loaded {len(chapters)} chapters from custom outline")
         return chapters
     except Exception as e:
         logger.error(f"Error loading custom outline: {e}")
@@ -188,14 +212,17 @@ def main():
 
     # Check if using custom outline
     custom_outline_path = os.getenv('CUSTOM_OUTLINE')
-    if custom_outline_path:
-        logger.info("Loading custom outline from: %s", custom_outline_path)
+    outline = None
+    if custom_outline_path and os.path.exists(custom_outline_path):
+        logger.info(f"Loading custom outline from: {custom_outline_path}")
         outline = load_custom_outline(custom_outline_path)
         if not outline:
-            logger.warning("Failed to load custom outline, using default generation")
-            outline = None
+            logger.error("Failed to load custom outline, please check the format")
+            return
+        logger.info(f"Successfully loaded outline with {len(outline)} chapters")
     else:
-        outline = None
+        logger.error(f"Custom outline not found at: {custom_outline_path}")
+        return
 
     # Display startup information and wait for user confirmation
     display_startup_info(genre_config, outline)

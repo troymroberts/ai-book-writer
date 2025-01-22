@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
+
 from pydantic_settings import BaseSettings
 from pydantic import (
     Field,
@@ -26,6 +29,7 @@ class LLMSettings(BaseSettings):
         'openai/gpt-4',
         'openai/gpt-3.5-turbo',
         'deepseek/deepseek-chat',
+        'deepseek/deepseek-reasoner',
         'deepseek-chat',
         'gemini/gemini-pro',
         'groq/llama2-70b-4096',
