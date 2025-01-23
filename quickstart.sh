@@ -22,6 +22,7 @@ if [ -z "$LLM__MODEL" ]; then
     echo "- gemini/gemini-pro"
     echo "- groq/llama2-70b-4096"
     echo "- gemini-flash/gemini-flash"
+    echo "- ollama/deepseek-r1:14b" # Added Ollama example to help message
     exit 1
 fi
 
@@ -32,18 +33,12 @@ if [ -z "$BOOK_GENRE" ]; then
     exit 1
 fi
 
-# Check for custom outline
-CUSTOM_OUTLINE="book_output/custom_outline.txt"
-if [ ! -f "$CUSTOM_OUTLINE" ]; then
-    echo "Error: Custom outline not found at $CUSTOM_OUTLINE"
-    exit 1
-fi
-
 echo "=== Book Generation Configuration ==="
 echo "LLM_MODEL=${LLM__MODEL}"
 echo "Selected Genre: ${BOOK_GENRE}"
-echo "Using Custom Outline: ${CUSTOM_OUTLINE}"
-echo "Using DeepSeek API"
+# Removed CUSTOM_OUTLINE check - no longer required
+# echo "Using Custom Outline: ${CUSTOM_OUTLINE}" # Removed line
+echo "Using LLM: ${LLM__MODEL}" # Updated message to be generic
 python -c "import os; print(f'Python sees LLM_MODEL as: {os.getenv(\"LLM__MODEL\")}')"
-export CUSTOM_OUTLINE
+# Removed export CUSTOM_OUTLINE - no longer needed
 python main.py
