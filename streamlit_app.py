@@ -238,11 +238,11 @@ def main():
 
             with api_key_col:
                 api_key = st.text_input(
-                    api_key_label,
-                    f"Enter your {selected_provider_type} API Key",  # Dynamic label
-                    value=env_dict.get(f'LLM__API_KEY_{selected_provider_type.upper()}', ''), # Dynamic env var
+                    label=api_key_label, # Use keyword argument for label
+                    placeholder=f"Enter your {selected_provider_type} API Key", # Use placeholder for the hint text
+                    value=env_dict.get(f'LLM__API_KEY_{selected_provider_type.upper()}', ''), # Keyword argument for value
                     type="password",
-                    help=f"Enter your API key for {selected_provider_type}. You can obtain API keys from the {selected_provider_type} developer portal. Keep your API key secure."
+                    help=f"Enter your {selected_provider_type}. You can obtain API keys from the {selected_provider_type} developer portal. Keep your API key secure."
                 )
             with test_button_col:
                 st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)  # Add vertical space
