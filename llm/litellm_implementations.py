@@ -1,4 +1,3 @@
-```python
 from typing import Optional, Dict, Any
 import os
 from .litellm_base import LiteLLMBase

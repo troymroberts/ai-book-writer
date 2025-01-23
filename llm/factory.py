@@ -1,4 +1,3 @@
-```python
 import os
 from typing import Dict, Optional
 from .mistral_nemo import MistralNemoImplementation
