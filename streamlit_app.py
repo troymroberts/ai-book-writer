@@ -8,7 +8,6 @@ from ebooklib import epub
 from datetime import datetime
 from pathlib import Path
 import glob
-import json
 import markdown
 import subprocess
 import signal  # Import the signal module
@@ -345,11 +344,12 @@ def main():
                     status_text_area = st.empty()
                     print("Before subprocess.Popen") # ADD THIS LINE
                     st.session_state.process = subprocess.Popen(
-                        ["python", "main.py"], # Or "./quickstart.sh" if you prefer using the script
+                        ["./venv/bin/python", "main.py"], # Explicit path to venv python (Linux/macOS)
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         env=os.environ.copy(), # Inherit current env vars
-                        preexec_fn=os.setsid # Allow graceful termination
+                        preexec_fn=os.setsid, # Allow graceful termination
+                        cwd=os.getcwd() # Set current working directory
                     )
                     print("After subprocess.Popen") # ADD THIS LINE
                     st.session_state.generation_status = "Generating Book Content"
