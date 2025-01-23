@@ -263,8 +263,25 @@ def main():
                     st.error(f"{selected_provider_type} API key test failed. Please check your key and model selection.")
 
 
-        # Genre selection, Book metadata, Generation parameters, Save Configuration Button ( ... rest of your existing tab1 code - unchanged ... )
-        # ... (rest of tab1 code - unchanged - paste from previous version) ...
+        # Genre selection
+        genre_options = [
+            "literary_fiction", "fantasy_scifi", "thriller_mystery", "romance",
+            "historical_fiction", "young_adult", "mysticism", "esoteric_philosophy",
+            "comparative_religion", "consciousness_studies",
+            "computer_science_textbook", "physics_textbook", "chemistry_textbook",
+            "mathematics_textbook", "engineering_textbook"
+        ]
+        selected_genre = st.selectbox("Select Genre", genre_options, index=genre_options.index(env_dict.get('BOOK_GENRE', 'literary_fiction').replace("genre/","")) if env_dict.get('BOOK_GENRE') else 0, help="Choose the genre for your book. This affects the writing style and themes.")
+
+        # Book metadata inputs
+        book_title = st.text_input("Book Title", value=env_dict.get('BOOK_TITLE', 'My AI Book'), help="Enter the title of your book.")
+        book_author = st.text_input("Author Name", value=env_dict.get('BOOK_AUTHOR', 'AI Author'), help="Enter the author name for the book.")
+        cover_image_path = st.text_input("Cover Image Path (optional)", value=env_dict.get('BOOK_COVER_IMAGE', ''), help="Path to a cover image for the book (optional).")
+
+        # Generation parameters
+        max_tokens = st.slider("Max Tokens per Chapter", min_value=500, max_value=7000, value=int(env_dict.get('GEN_MAX_TOKENS', 4000)), step=100, help="Set the maximum number of tokens (words/word pieces) to generate per chapter.")
+        temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=float(env_dict.get('GEN_TEMPERATURE', 0.7)), step=0.05, help="Controls the randomness of the AI's output. Higher values (closer to 1) make the output more random and creative, while lower values (closer to 0) make it more focused and deterministic.")
+
         # Save configuration button
         if st.button("Save Configuration"):
             env_dict.update({
@@ -272,8 +289,10 @@ def main():
                 'LLM__PROVIDER_TYPE': selected_provider_type, # Save provider type
                 'LLM__DEEPSEEK_API_KEY': api_key if selected_provider_type == "DeepSeek" else env_dict.get('LLM__DEEPSEEK_API_KEY', ''), # Conditionally save API keys
                 'OLLAMA_BASE_URL': ollama_base_url if selected_provider_type == "Ollama" else env_dict.get('OLLAMA_BASE_URL', 'http://localhost:11434'), # Save Ollama base URL
-                # ... (rest of your existing save config logic - unchanged) ...
                 'BOOK_GENRE': f'genre/{selected_genre}',
+                'BOOK_TITLE': book_title,
+                'BOOK_AUTHOR': book_author,
+                'BOOK_COVER_IMAGE': cover_image_path,
                 'GEN_MAX_TOKENS': str(max_tokens),
                 'GEN_TEMPERATURE': str(temperature)
             })
@@ -283,16 +302,119 @@ def main():
 
     with tab2:
         st.header("Book Generation")
-        # ... (rest of your tab2, tab3 code - unchanged - paste from previous version) ...
+        col1, col2 = st.columns([3, 1])
+
+        with col1:
+            initial_prompt_text = st.text_area("Initial Book Prompt", value=env_dict.get('INITIAL_BOOK_PROMPT', 'Write a book about a dystopian future where AI controls society.'))
+            num_chapters = st.number_input("Number of Chapters", min_value=5, max_value=30, value=int(env_dict.get('NUM_CHAPTERS', 10)), step=1, help="Set the number of chapters for your book.")
+            if st.button("Generate Book"):
+                if not initial_prompt_text:
+                    st.error("Please enter an initial book prompt.")
+                else:
+                    st.session_state.generation_status = "Generating Outline"
+                    st.session_state.current_chapter = 1
+                    st.session_state.preview_content = ""
+                    st.session_state.stop_generation = False  # Reset stop flag
+                    env_dict['INITIAL_BOOK_PROMPT'] = initial_prompt_text
+                    env_dict['NUM_CHAPTERS'] = str(num_chapters)
+                    save_env_file(env_dict)
+
+                    # Prepare and start book generation process
+                    api_key = env_dict.get('LLM__DEEPSEEK_API_KEY') # Example for DeepSeek, adjust as needed
+                    progress_bar = st.progress(0)
+                    status_text_area = st.empty()
+                    st.session_state.process = subprocess.Popen(
+                        ["python", "main.py"], # Or "./quickstart.sh" if you prefer using the script
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        env=os.environ.copy(), # Inherit current env vars
+                        preexec_fn=os.setsid # Allow graceful termination
+                    )
+                    st.session_state.generation_status = "Generating Book Content"
+
+        with col2:
+            st.markdown("### Generation Status")
+            status_display = st.empty()
+            chapter_display = st.empty()
+            stop_button_col = st.columns(1) # Create column layout for button
+
+            if st.session_state.generation_status:
+                status_display.info(f"Status: {st.session_state.generation_status}")
+            else:
+                status_display.info("Ready to Generate Outline and Book")
+
+            chapter_display.markdown(f"**Generating Chapter:** {st.session_state.current_chapter}")
+
+            if st.session_state.process and st.session_state.process.poll() is None: # Check if process is running
+                 with stop_button_col[0]: # Use the first column for button
+                    if st.button("Stop Generation"):
+                        if st.session_state.process:
+                            os.killpg(os.getpgid(st.session_state.process.pid), signal.SIGTERM) # Send SIGTERM to the process group
+                            st.session_state.stop_generation = True # Set stop flag
+                            st.session_state.process = None # Reset process state
+                            st.session_state.generation_status = "Generation Stopped by User"
+                            status_display.warning("Generation Stopped by User")
+
+
+            if st.session_state.generation_status == "Generating Book Content" and st.session_state.process:
+                if st.session_state.process.poll() is not None: # Process finished
+                    st.session_state.generation_status = "Book Generation Complete"
+                    status_display.success("Book Generation Complete!")
+                    chapter_display.empty() # Clear chapter display on completion
+                    st.session_state.process = None # Reset process state
+                    progress_bar.empty() # Clear progress bar
+                    status_text_area.empty() # Clear status text area
 
 
     with tab3:
         st.header("Preview & Export")
-        # ... (rest of your tab3 code - unchanged - paste from previous version) ...
+        chapter_files_preview = glob.glob('book_output/chapter_*.txt')
+        chapter_files_preview.sort()
+        selected_chapter_file = st.selectbox("Select Chapter to Preview", chapter_files_preview)
+        if selected_chapter_file:
+            st.subheader(f"Preview of {selected_chapter_file}")
+            preview_content = preview_chapter(selected_chapter_file)
+            st.markdown(preview_content, unsafe_allow_html=True)
+            st.session_state.preview_content = preview_content # Store preview content in session state
+
+        st.subheader("Export Options")
+        book_title_export = st.text_input("Book Title for Export", value=env_dict.get('BOOK_TITLE', 'My AI Book') + " export")
+        book_author_export = st.text_input("Author Name for Export", value=env_dict.get('BOOK_AUTHOR', 'AI Author'))
+        export_format = st.selectbox("Export Format", ["EPUB", "PDF"], index=0)
+        chapters_dir = 'book_output'
+        output_filename_base = f"{book_title_export.replace(' ', '_').lower()}_by_{book_author_export.replace(' ', '_').lower()}".replace(" ", "_")
+        output_epub_path = os.path.join('book_output', f"{output_filename_base}.epub")
+        output_pdf_path = os.path.join('book_output', f"{output_filename_base}.pdf")
+
+        if st.button("Export Book"):
+            if export_format == "EPUB":
+                create_epub(book_title_export, book_author_export, chapters_dir, output_epub_path, cover_image_path)
+                with open(output_epub_path, "rb") as epub_file:
+                    st.download_button(
+                        label="Download EPUB",
+                        data=epub_file,
+                        file_name=os.path.basename(output_epub_path),
+                        mime="application/epub+zip"
+                    )
+                st.success(f"EPUB file created at: {output_epub_path}")
+
+            elif export_format == "PDF":
+                if export_to_pdf(output_epub_path, output_pdf_path): # Ensure EPUB exists before PDF conversion
+                    with open(output_pdf_path, "rb") as pdf_file:
+                        st.download_button(
+                            label="Download PDF",
+                            data=pdf_file,
+                            file_name=os.path.basename(output_pdf_path),
+                            mime="application/pdf"
+                        )
+                    st.success(f"PDF file created at: {output_pdf_path}")
+                else:
+                    st.error("PDF export failed. Please check console logs for details and ensure Calibre is installed.")
 
 
-def generate_book_process(api_key, progress_bar, status_text_area): # ... (rest of your generate_book_process function - unchanged - paste from previous version) ...
-    # ... (rest of your generate_book_process function - unchanged) ...
+def generate_book_process(api_key, progress_bar, status_text_area):
+    # ... (rest of your generate_book_process function - unchanged - paste from previous version) ...
+    pass # placeholder to avoid further errors, replace with actual function content
 
 
 if __name__ == "__main__":
