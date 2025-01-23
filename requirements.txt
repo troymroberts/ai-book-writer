@@ -17,3 +17,6 @@ mypy>=0.910  # For type checking
 # Optional dependencies
 tqdm>=4.65.0  # For progress bars
 python-dotenv>=0.19.0  # For environment variable management
+streamlit>=1.29.0
+ebooklib>=0.18.0
+markdown>=3.7.0
