@@ -1,4 +1,3 @@
---- START OF FILE streamlit_app.py ---
 """
 Streamlit UI for AI Book Writer - WITH OLLAMA BASE URL INPUT IN UI
 """
