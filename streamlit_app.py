@@ -204,9 +204,8 @@ def main():
         # Model selection - Dynamic options based on provider type
         model_options = []
         if selected_provider_type == "Ollama":
-            if not st.session_state.ollama_models: # Load models only once per session
-                st.session_state.ollama_models = get_ollama_models()
-            model_options = st.session_state.ollama_models
+            # No dynamic model listing for Ollama anymore
+            pass # We will use text input instead
         elif selected_provider_type == "DeepSeek":
             model_options = ['deepseek-chat', 'deepseek-reasoner']
         elif selected_provider_type == "OpenAI":
@@ -218,11 +217,19 @@ def main():
 
         selected_model = st.selectbox(
             "Select Model",
-            model_options if model_options else ["Please select provider type first"], # Placeholder if no options
-            index=0 if model_options and env_dict.get('LLM__MODEL') in model_options else 0, # Set index only if model_options is not empty and env model is valid
-            disabled=not model_options, # Disable if no model options loaded
-            help="Select the specific LLM model to use from the chosen provider. The list of models is dynamically updated based on the selected provider type. For Ollama, this list is populated from your local Ollama server."
+            model_options if model_options and selected_provider_type != "Ollama" else ["Please select provider type first"], # Placeholder if no options, or if not Ollama
+            index=0 if model_options and env_dict.get('LLM__MODEL') in model_options and selected_provider_type != "Ollama" else 0, # Set index only if model_options is not empty and env model is valid and not Ollama
+            disabled=not model_options and selected_provider_type != "Ollama", # Disable if no model options loaded and not Ollama
+            help="Select the specific LLM model to use from the chosen provider. The list of models is dynamically updated based on the selected provider type. For Ollama, enter model name manually."
         )
+
+        if selected_provider_type == "Ollama":
+            selected_model = st.text_input(
+                "Ollama Model Name",
+                value=env_dict.get('LLM__MODEL', '').split('/')[-1] if env_dict.get('LLM__MODEL', '').startswith('ollama/') else env_dict.get('LLM__MODEL', 'llama2'), # Default value or extract from env
+                help="Enter the name of the Ollama model you want to use (e.g., llama2, mistral). Ensure this model is available in your local Ollama server."
+            )
+
 
         # API Configuration / Ollama Base URL - Conditional Input
         if selected_provider_type == "Ollama":
