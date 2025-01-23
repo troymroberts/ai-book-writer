@@ -1,4 +1,3 @@
---- START OF FILE llm/litellm_implementations.py ---
 ```python
 from typing import Optional, Dict, Any
 import os
