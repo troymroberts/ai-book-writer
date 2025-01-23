@@ -12,19 +12,19 @@ class OutlineGenerator:
         """Generate a book outline based on initial prompt"""
         print("\nGenerating outline...")
 
-        
+
         groupchat = autogen.GroupChat(
             agents=[
                 self.agents["user_proxy"],
                 self.agents["story_planner"],
-                self.agents["world_builder"],
+                self.agents["setting_builder"],
                 self.agents["outline_creator"]
             ],
             messages=[],
             max_round=4,
             speaker_selection_method="round_robin"
         )
-        
+
         manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=self.agent_config)
 
         outline_prompt = f"""Let's create a {num_chapters}-chapter outline for a book with the following premise:
@@ -33,7 +33,7 @@ class OutlineGenerator:
 
 Process:
 1. Story Planner: Create a high-level story arc and major plot points
-2. World Builder: Suggest key settings and world elements needed
+2. Setting Builder: Suggest key settings and world elements needed
 3. Outline Creator: Generate a detailed outline with chapter titles and prompts
 
 Start with Chapter 1 and number chapters sequentially.
@@ -57,7 +57,7 @@ End the outline with 'END OF OUTLINE'"""
 
             # Extract the outline from the chat messages
             return self._process_outline_results(groupchat.messages, num_chapters)
-            
+
         except Exception as e:
             print(f"Error generating outline: {str(e)}")
             # Try to salvage any outline content we can find
@@ -70,7 +70,7 @@ End the outline with 'END OF OUTLINE'"""
     def _extract_outline_content(self, messages: List[Dict]) -> str:
         """Extract outline content from messages with better error handling"""
         print("Searching for outline content in messages...")
-        
+
         # Look for content between "OUTLINE:" and "END OF OUTLINE"
         for msg in reversed(messages):
             content = msg.get("content", "")
@@ -78,14 +78,14 @@ End the outline with 'END OF OUTLINE'"""
                 # Extract content between OUTLINE: and END OF OUTLINE
                 start_idx = content.find("OUTLINE:")
                 end_idx = content.find("END OF OUTLINE")
-                
+
                 if start_idx != -1:
                     if end_idx != -1:
                         return content[start_idx:end_idx].strip()
                     else:
                         # If no END OF OUTLINE marker, take everything after OUTLINE:
                         return content[start_idx:].strip()
-                        
+
         # Fallback: look for content with chapter markers
         for msg in reversed(messages):
             content = msg.get("content", "")
@@ -97,14 +97,14 @@ End the outline with 'END OF OUTLINE'"""
     def _process_outline_results(self, messages: List[Dict], num_chapters: int) -> List[Dict]:
         """Extract and process the outline with strict format requirements"""
         outline_content = self._extract_outline_content(messages)
-        
+
         if not outline_content:
             print("No structured outline found, attempting emergency processing...")
             return self._emergency_outline_processing(messages, num_chapters)
 
         chapters = []
         chapter_sections = re.split(r'Chapter \d+:', outline_content)
-        
+
         for i, section in enumerate(chapter_sections[1:], 1):  # Skip first empty section
             try:
                     # Extract required components
@@ -141,7 +141,7 @@ End the outline with 'END OF OUTLINE'"""
                         f"- Tone: {tone_match.group(1).strip()}"
                     ])
                 }
-                
+
                 # Verify events (at least 3)
                 events = re.findall(r'-\s*(.+?)(?=\n|$)', events_match.group(1))
                 if len(events) < 3:
@@ -164,11 +164,11 @@ End the outline with 'END OF OUTLINE'"""
         """Verify and fix chapter numbering"""
         # Sort chapters by their current number
         chapters.sort(key=lambda x: x['chapter_number'])
-        
+
         # Renumber chapters sequentially starting from 1
         for i, chapter in enumerate(chapters, 1):
             chapter['chapter_number'] = i
-        
+
         # Add placeholder chapters if needed
         while len(chapters) < num_chapters:
             next_num = len(chapters) + 1
@@ -177,47 +177,47 @@ End the outline with 'END OF OUTLINE'"""
                 'title': f'Chapter {next_num}',
                 'prompt': '- Key events: [To be determined]\n- Character developments: [To be determined]\n- Setting: [To be determined]\n- Tone: [To be determined]'
             })
-        
+
         # Trim excess chapters if needed
         chapters = chapters[:num_chapters]
-        
+
         return chapters
 
     def _emergency_outline_processing(self, messages: List[Dict], num_chapters: int) -> List[Dict]:
         """Emergency processing when normal outline extraction fails"""
         print("Attempting emergency outline processing...")
-        
+
         chapters = []
         current_chapter = None
-        
+
         # Look through all messages for any chapter content
         for msg in messages:
             content = msg.get("content", "")
             lines = content.split('\n')
-            
+
             for line in lines:
                 # Look for chapter markers
                 chapter_match = re.search(r'Chapter (\d+)', line)
                 if chapter_match and "Key events:" in content:
                     if current_chapter:
                         chapters.append(current_chapter)
-                    
+
                     current_chapter = {
                         'chapter_number': int(chapter_match.group(1)),
                         'title': line.split(':')[-1].strip() if ':' in line else f"Chapter {chapter_match.group(1)}",
                         'prompt': []
                     }
-                
+
                 # Collect bullet points
                 if current_chapter and line.strip().startswith('-'):
                     current_chapter['prompt'].append(line.strip())
-            
+
             # Add the last chapter if it exists
             if current_chapter and current_chapter.get('prompt'):
                 current_chapter['prompt'] = '\n'.join(current_chapter['prompt'])
                 chapters.append(current_chapter)
                 current_chapter = None
-        
+
         if not chapters:
             print("Emergency processing failed to find any chapters")
             # Create a basic outline structure
@@ -229,6 +229,6 @@ End the outline with 'END OF OUTLINE'"""
                 }
                 for i in range(1, num_chapters + 1)
             ]
-        
+
         # Ensure proper sequence and number of chapters
         return self._verify_chapter_sequence(chapters, num_chapters)
