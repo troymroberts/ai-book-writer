@@ -1,3 +1,5 @@
+--- START OF FILE llm/litellm_implementations.py ---
+```python
 from typing import Optional, Dict, Any
 import os
 from .litellm_base import LiteLLMBase
@@ -5,7 +7,7 @@ from .deepseek_client import DeepSeekClient
 
 class OpenAIImplementation(LiteLLMBase):
     """Implementation for OpenAI models"""
-    
+
     def __init__(self, model: str, api_key: str, organization: Optional[str] = None, **kwargs):
         super().__init__(
             model=f"openai/{model}",
@@ -16,7 +18,7 @@ class OpenAIImplementation(LiteLLMBase):
 
 class DeepSeekImplementation(LiteLLMBase):
     """Implementation for DeepSeek models"""
-    
+
     def __init__(self, config: Dict, **kwargs):
         """Initialize with configuration"""
         super().__init__(
@@ -26,7 +28,7 @@ class DeepSeekImplementation(LiteLLMBase):
             **kwargs
         )
         self.client = DeepSeekClient(config)
-        
+
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text using DeepSeek model"""
         response = self.client.generate(
@@ -34,7 +36,7 @@ class DeepSeekImplementation(LiteLLMBase):
             **kwargs
         )
         return response
-        
+
     def generate_chat_completion(
         self,
         messages: list,
@@ -53,7 +55,7 @@ class DeepSeekImplementation(LiteLLMBase):
 
 class GeminiImplementation(LiteLLMBase):
     """Implementation for Google Gemini models"""
-    
+
     def __init__(self, model: str, api_key: str, organization: Optional[str] = None, **kwargs):
         super().__init__(
             model=f"gemini/{model}",
@@ -64,7 +66,7 @@ class GeminiImplementation(LiteLLMBase):
 
 class GroqImplementation(LiteLLMBase):
     """Implementation for Groq models"""
-    
+
     def __init__(self, model: str, api_key: str, organization: Optional[str] = None, **kwargs):
         super().__init__(
             model=f"groq/{model}",
@@ -75,20 +77,20 @@ class GroqImplementation(LiteLLMBase):
 
 class OllamaImplementation(LiteLLMBase):
     """Implementation for Ollama models"""
-    
-    def __init__(self, model: str, api_key: str = None, **kwargs):
+
+    def __init__(self, model: str, api_key: str = None, ollama_base_url: str = None, **kwargs):
         super().__init__(
             model=f"ollama/{model}",
-            base_url=os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434'),
+            base_url=ollama_base_url or os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434'),
             api_key=api_key,  # Ollama typically doesn't need an API key for local deployment
             **kwargs
         )
-        
+
     def generate_text(self, prompt: str, **kwargs) -> str:
         """Generate text using Ollama model"""
         response = self.generate(prompt, **kwargs)
         return response
-        
+
     def generate_chat_completion(
         self,
         messages: list,
@@ -106,7 +108,7 @@ class OllamaImplementation(LiteLLMBase):
 
 class O1PreviewImplementation(LiteLLMBase):
     """Implementation for O1-Preview models"""
-    
+
     def __init__(self, model: str, api_key: str, organization: Optional[str] = None, **kwargs):
         super().__init__(
             model=f"o1/{model}",
@@ -117,7 +119,7 @@ class O1PreviewImplementation(LiteLLMBase):
 
 class GeminiFlashImplementation(LiteLLMBase):
     """Implementation for Gemini 2.0 Flash Experimental models"""
-    
+
     def __init__(self, model: str, api_key: str, organization: Optional[str] = None, **kwargs):
         super().__init__(
             model=f"gemini-flash/{model}",
