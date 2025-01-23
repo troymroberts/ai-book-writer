@@ -183,6 +183,13 @@ def main():
     # Load current environment variables
     env_dict = load_env_file()
 
+    # Print environment variables for debugging - ADDED HERE
+    print("\n--- Environment Variables Seen by Streamlit App ---")
+    for key, value in os.environ.items():
+        if key.startswith("LLM") or key.startswith("OLLAMA") or key.startswith("BOOK") or key.startswith("GEN"): # Filter for relevant env vars
+            print(f"{key}={value}")
+    print("---\n")
+
     # Initialize settings
     print("Environment LLM__MODEL:", os.environ.get('LLM__MODEL')) # <-- Add this
     settings = Settings()
