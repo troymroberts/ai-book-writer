@@ -20,6 +20,9 @@ from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
 import litellm  # Import litellm for listing ollama models
 
+# Enable verbose logging for litellm - ADDED HERE!
+litellm.set_verbose = True
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -226,8 +229,8 @@ def main():
         if selected_provider_type == "Ollama":
             selected_model = st.text_input(
                 "Ollama Model Name",
-                value=env_dict.get('LLM__MODEL', '').split('/')[-1] if env_dict.get('LLM__MODEL', '').startswith('ollama/') else env_dict.get('LLM__MODEL', 'llama3:1'), # Default value or extract from env, default to llama3:1
-                help="Enter the name of the Ollama model you want to use (e.g., llama2, mistral, llama3:1). Ensure this model is available in your local Ollama server."
+                value=env_dict.get('LLM__MODEL', '').split(':')[-1] if env_dict.get('LLM__MODEL', '').startswith('ollama/') else env_dict.get('LLM__MODEL', 'deepseek-r1:14b'), # Default value or extract from env, default to deepseek-r1:14b
+                help="Enter the name of the Ollama model you want to use (e.g., llama2, mistral, deepseek-r1:14b). Ensure this model is available in your local Ollama server."
             )
 
 
@@ -294,7 +297,7 @@ def main():
         # Save configuration button
         if st.button("Save Configuration"):
             env_dict.update({
-                'LLM__MODEL': f"{selected_provider_type.lower()}/{selected_model}" if selected_provider_type == "Ollama" else selected_model, # Save ollama model with prefix
+                'LLM__MODEL': f"ollama/{selected_model}" if selected_provider_type == "Ollama" else selected_model, # Save ollama model with prefix
                 'LLM__PROVIDER_TYPE': selected_provider_type, # Save provider type
                 'LLM__DEEPSEEK_API_KEY': api_key if selected_provider_type == "DeepSeek" else env_dict.get('LLM__DEEPSEEK_API_KEY', ''), # Conditionally save API keys
                 'OLLAMA_BASE_URL': ollama_base_url if selected_provider_type == "Ollama" else env_dict.get('OLLAMA_BASE_URL', 'http://localhost:11434'), # Save Ollama base URL
