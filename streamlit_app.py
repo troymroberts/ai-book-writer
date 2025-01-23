@@ -226,8 +226,8 @@ def main():
         if selected_provider_type == "Ollama":
             selected_model = st.text_input(
                 "Ollama Model Name",
-                value=env_dict.get('LLM__MODEL', '').split('/')[-1] if env_dict.get('LLM__MODEL', '').startswith('ollama/') else env_dict.get('LLM__MODEL', 'llama2'), # Default value or extract from env
-                help="Enter the name of the Ollama model you want to use (e.g., llama2, mistral). Ensure this model is available in your local Ollama server."
+                value=env_dict.get('LLM__MODEL', '').split('/')[-1] if env_dict.get('LLM__MODEL', '').startswith('ollama/') else env_dict.get('LLM__MODEL', 'llama3:1'), # Default value or extract from env, default to llama3:1
+                help="Enter the name of the Ollama model you want to use (e.g., llama2, mistral, llama3:1). Ensure this model is available in your local Ollama server."
             )
 
 
