@@ -37,6 +37,8 @@ class LLMSettings(BaseSettings):
         'ollama/llama2',
         'ollama/mistral',
         'ollama/codellama',
+        'ollama/deepseek-r1-1.5b'
+        'ollama/deepseek-r1-14b'
         'ollama/deepseek-r1-32b'
     ]] = Field(default=None, description="Selected LLM model")
 
