@@ -2,6 +2,7 @@
 
 ## Overview
 The AutoGen Book Generator is an advanced AI-powered system that creates complete, structured books through collaborative AI agents. Designed for authors, educators, and content creators, it streamlines the book creation process while maintaining high-quality output.
+![alt text](image.png)
 
 ## Key Features
 - Multi-agent collaborative writing system
