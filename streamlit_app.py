@@ -181,7 +181,9 @@ def main():
     env_dict = load_env_file()
 
     # Initialize settings
+    print("Environment LLM__MODEL:", os.environ.get('LLM__MODEL')) # <-- Add this
     settings = Settings()
+    print("Settings LLM Model:", settings.llm.model) # <-- Add this
 
     # Tabs for different sections
     tab1, tab2, tab3 = st.tabs(["Configuration", "Book Generation", "Preview & Export"])
