@@ -37,9 +37,9 @@ class LLMSettings(BaseSettings):
         'ollama/llama2',
         'ollama/mistral',
         'ollama/codellama',
-        'ollama/deepseek-r1-1.5b'
-        'ollama/deepseek-r1-14b'
-        'ollama/deepseek-r1-32b'
+        'ollama/deepseek-r1-1.5b',
+        'ollama/deepseek-r1-14b',  # ADD THIS LINE
+        'ollama/deepseek-r1-32b'   # Corrected typo
     ]] = Field(default=None, description="Selected LLM model")
 
     ollama_base_url: Optional[str] = Field(
