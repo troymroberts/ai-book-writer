@@ -44,7 +44,7 @@ class LLMFactory:
             print("- deepseek/ (e.g. deepseek-chat)")
             print("- gemini/ (e.g. gemini/gemini-pro)")
             print("- groq/ (e.g. groq/llama2-70b)")
-            print("- ollama/ (e.g. ollama/llama2)") # <-- Added ollama to supported models list
+            print("- ollama/ (e.g. ollama/llama2, ollama/deepseek-r1:14b)") # <-- Updated ollama list
             exit(1)
 
         # Validate API key presence based on model type
@@ -170,6 +170,8 @@ class LLMFactory:
                 model=model[7:],  # Remove 'ollama/' prefix
                 ollama_base_url=ollama_base_url # Pass base URL from config
             )
+        else:
+            raise ValueError(f"Model '{config['model']}' is not supported or recognized.")
 
 
     @staticmethod

@@ -327,6 +327,7 @@ def main():
             initial_prompt_text = st.text_area("Initial Book Prompt", value=env_dict.get('INITIAL_BOOK_PROMPT', 'Write a book about a dystopian future where AI controls society.'))
             num_chapters = st.number_input("Number of Chapters", min_value=5, max_value=30, value=int(env_dict.get('NUM_CHAPTERS', 10)), step=1, help="Set the number of chapters for your book.")
             if st.button("Generate Book"):
+                print("\n--- Generate Book Button Clicked ---") # ADD THIS LINE
                 if not initial_prompt_text:
                     st.error("Please enter an initial book prompt.")
                 else:
@@ -342,6 +343,7 @@ def main():
                     api_key = env_dict.get('LLM__DEEPSEEK_API_KEY') # Example for DeepSeek, adjust as needed
                     progress_bar = st.progress(0)
                     status_text_area = st.empty()
+                    print("Before subprocess.Popen") # ADD THIS LINE
                     st.session_state.process = subprocess.Popen(
                         ["python", "main.py"], # Or "./quickstart.sh" if you prefer using the script
                         stdout=subprocess.PIPE,
@@ -349,7 +351,9 @@ def main():
                         env=os.environ.copy(), # Inherit current env vars
                         preexec_fn=os.setsid # Allow graceful termination
                     )
+                    print("After subprocess.Popen") # ADD THIS LINE
                     st.session_state.generation_status = "Generating Book Content"
+                print("--- End Generate Book Button Clicked ---\n") # ADD THIS LINE
 
         with col2:
             st.markdown("### Generation Status")
@@ -427,8 +431,6 @@ def main():
                             mime="application/pdf"
                         )
                     st.success(f"PDF file created at: {output_pdf_path}")
-                else:
-                    st.error("PDF export failed. Please check console logs for details and ensure Calibre is installed.")
 
 
 def generate_book_process(api_key, progress_bar, status_text_area):
