@@ -1,6 +1,8 @@
 """Main script for running the book generation system - now with SIGTERM signal handling"""
-import litellm   # ADD THIS LINE
-litellm.set_verbose = True  # ADD THIS LINE
+print("--- main.py script started ---")  # ADD THIS LINE
+print("--- Initializing main.py logging ---") # ADD THIS LINE
+import litellm   # Keep verbose logging enabled
+litellm.set_verbose = True
 import os
 import logging
 from logging.config import dictConfig
