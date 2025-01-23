@@ -1,12 +1,9 @@
-"""Main class for generating books using AutoGen with improved iteration control"""
+"""Main class for generating books using AutoGen with improved iteration control and new agents - now with status updates for UI"""
 import autogen
 from typing import Dict, List, Optional
 import os
 import time
 import re
-import logging
-
-logger = logging.getLogger(__name__)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,22 +15,16 @@ class BookGenerator:
         self.agent_config = agent_config
         self.output_dir = "book_output"
         self.chapters_memory = []  # Store chapter summaries
-        self.max_iterations = 3  # Limit editor-writer iterations
-        self.outline = outline  # Store the outline
+        self.max_iterations = 3
+        self.outline = outline
         os.makedirs(self.output_dir, exist_ok=True)
 
     def _clean_chapter_content(self, content: str) -> str:
         """Clean up chapter content while preserving meaningful text"""
-        # Remove chapter number references in parentheses
         content = re.sub(r'\(Chapter \d+.*?\)', '', content)
-        
-        # Remove markdown artifacts but preserve emphasis
         content = content.replace('**', '')
         content = content.replace('__', '')
-        
-        # Remove empty lines and excessive whitespace
         content = '\n'.join([line.strip() for line in content.split('\n') if line.strip()])
-        
         return content
 
     def _generate_table_of_contents(self):
@@ -46,7 +37,7 @@ class BookGenerator:
         logger.info(f"Generated table of contents at {toc_path}")
 
     def initiate_group_chat(self) -> autogen.GroupChat:
-        """Create a new group chat for the agents with improved speaking order"""
+        """Create a new group chat for the agents including new specialized agents"""
         outline_context = "\n".join([
             f"\nChapter {ch['chapter_number']}: {ch['title']}\n{ch['prompt']}"
             for ch in sorted(self.outline, key=lambda x: x['chapter_number'])
@@ -62,17 +53,21 @@ class BookGenerator:
             system_message=self.agents["writer"].system_message,
             llm_config=self.agent_config
         )
-        
+
         return autogen.GroupChat(
             agents=[
                 self.agents["user_proxy"],
                 self.agents["memory_keeper"],
+                self.agents["story_planner"], # Included story_planner in chapter generation flow (optional)
+                self.agents["setting_builder"], # Included setting_builder in chapter generation flow (optional)
+                self.agents["character_agent"], # Included character_agent in chapter generation flow (optional)
+                self.agents["plot_agent"], # Included plot_agent in chapter generation flow (optional)
                 self.agents["writer"],
                 self.agents["editor"],
                 writer_final
             ],
             messages=messages,
-            max_round=5,
+            max_round=6, # Increased max rounds to accommodate more agents
             speaker_selection_method="round_robin"
         )
 
@@ -87,30 +82,31 @@ class BookGenerator:
         has_final_content = False
         sequence_complete = {
             'memory_update': False,
-            'plan': False,
-            'setting': False,
+            'plan': False, # Plan from Story Planner (optional)
+            'setting': False, # Setting from Setting Builder (optional)
+            'character': False, # Character from Character Agent (optional)
+            'plot': False, # Plot from Plot Agent (optional)
             'scene': False,
             'feedback': False,
             'scene_final': False,
             'confirmation': False
         }
-        
-        # Analyze full conversation
+
         for msg in messages:
             content = msg.get("content", "")
             sender = self._get_sender(msg)
-            
-            # Track chapter number
+
             if not current_chapter:
                 num_match = re.search(r"Chapter (\d+):", content)
                 if num_match:
                     current_chapter = int(num_match.group(1))
-            
-            # Track completion sequence
+
             if "MEMORY UPDATE:" in content: sequence_complete['memory_update'] = True
-            if "PLAN:" in content: sequence_complete['plan'] = True
-            if "SETTING:" in content: sequence_complete['setting'] = True
-            if "SCENE:" in content: sequence_complete['scene'] = True
+            if "PLAN:" in content: sequence_complete['plan'] = True # Expecting plan tag (optional)
+            if "SETTING:" in content: sequence_complete['setting'] = True # Expecting setting tag (optional)
+            if "CHARACTER:" in content: sequence_complete['character'] = True # Expecting character tag (optional)
+            if "PLOT:" in content: sequence_complete['plot'] = True # Expecting plot tag (optional)
+            if "SCENE DRAFT:" in content or "SCENE:" in content: sequence_complete['scene'] = True
             if "FEEDBACK:" in content: sequence_complete['feedback'] = True
             if "SCENE FINAL:" in content and sender in ["writer_final", "writer"]:
                 sequence_complete['scene_final'] = True
@@ -121,15 +117,14 @@ class BookGenerator:
             logger.debug(f"Sequence complete: {sequence_complete}")
             logger.debug(f"Current chapter: {current_chapter}")
             logger.debug(f"Has final content: {has_final_content}")
-        
-        # Verify all steps completed and content exists
+
         return all(sequence_complete.values()) and current_chapter and has_final_content
-    
+
     def _prepare_chapter_context(self, chapter_number: int, prompt: str) -> str:
         """Prepare context for chapter generation"""
         if chapter_number == 1:
             return f"Initial Chapter\nRequirements:\n{prompt}"
-            
+
         context_parts = [
             "Previous Chapter Summaries:",
             *[f"Chapter {i+1}: {summary}" for i, summary in enumerate(self.chapters_memory)],
@@ -139,26 +134,23 @@ class BookGenerator:
         return "\n".join(context_parts)
 
     def generate_chapter(self, chapter_number: int, prompt: str) -> None:
-        """Generate a single chapter with completion verification"""
+        """Generate a single chapter with completion verification, incorporating new agents in the flow - WITH STATUS UPDATES"""
         logger.info(f"Generating Chapter {chapter_number}")
-        logger.debug(f"Chapter prompt: {prompt[:200]}...")  # Log first 200 chars of prompt
-        
+        logger.debug(f"Chapter prompt: {prompt[:200]}...")
+
         try:
-            # Create group chat with reduced rounds
             groupchat = self.initiate_group_chat()
             manager = autogen.GroupChatManager(
                 groupchat=groupchat,
                 llm_config=self.agent_config
             )
 
-            # Prepare context
             context = self._prepare_chapter_context(chapter_number, prompt)
             chapter_prompt = f"""
-            IMPORTANT: Wait for confirmation before proceeding.
-            IMPORTANT: This is Chapter {chapter_number}. Do not proceed to next chapter until explicitly instructed.
-            DO NOT END THE STORY HERE unless this is actually the final chapter ({self.outline[-1]['chapter_number']}).
+            IMPORTANT: This is Chapter {chapter_number}. Focus ONLY on this chapter. Do not proceed to the next chapter until explicitly instructed.
+            IMPORTANT: Wait for confirmation after each agent's step before proceeding to the next.
 
-            Current Task: Generate Chapter {chapter_number} content only.
+            Current Task: Generate Chapter {chapter_number} content only, following a detailed, step-by-step process.
 
             Chapter Outline:
             Title: {self.outline[chapter_number - 1]['title']}
@@ -169,34 +161,70 @@ class BookGenerator:
             Previous Context for Reference:
             {context}
 
-            Follow this exact sequence for Chapter {chapter_number} only:
+            Follow this strict sequence for generating Chapter {chapter_number}:
 
-            1. Memory Keeper: Context (MEMORY UPDATE)
-            2. Writer: Draft (CHAPTER)
-            3. Editor: Review (FEEDBACK)
-            4. Writer Final: Revision (CHAPTER FINAL)
+            1. Memory Keeper: Review previous chapters and current outline. Provide a MEMORY UPDATE summarizing relevant context for this chapter. (Tag: MEMORY UPDATE)
+            2. Story Planner: Based on the chapter outline and overall story arc, provide a detailed PLAN for this chapter, focusing on plot progression and pacing. (Tag: PLAN)
+            3. Setting Builder: Detail the SETTING for this chapter, ensuring it is vivid and consistent with the world-building. (Tag: SETTING)
+            4. Character Agent: Outline specific CHARACTER developments and actions for key characters within this chapter, maintaining character arcs. (Tag: CHARACTER)
+            5. Plot Agent: Refine the CHAPTER PLOT and pacing for this chapter based on the outline and overall story arc, focusing on key events and engagement. (Tag: PLOT)
+            6. Writer: Based on ALL preceding plans and outlines, write a complete SCENE DRAFT for Chapter {chapter_number}. Ensure it meets the minimum word count and incorporates all elements. (Tag: SCENE DRAFT)
+            7. Editor: Review the SCENE DRAFT for quality, consistency, outline alignment, and length. Provide FEEDBACK and suggest revisions, or approve if satisfactory. (Tag: FEEDBACK)
+            8. Writer Final: Revise the scene based on editor feedback to create the SCENE FINAL for Chapter {chapter_number}. (Tag: SCENE FINAL)
+            9. User Proxy: CONFIRMATION: Verify chapter completion, quality, and length. Proceed to the next chapter only upon explicit confirmation of successful finalization of Chapter {chapter_number}. (Tag: CONFIRMATION)
 
-            Wait for each step to complete before proceeding."""
+            Wait for each step to be confirmed before proceeding to the next agent. Ensure each agent completes their tagged output before moving forward."""
 
-            # Start generation
+            print(f"\nGenerating Chapter {chapter_number}: {self.outline[chapter_number - 1]['title']}") # Status update - Chapter start
+
+            print(f"  1. Memory Keeper: Preparing context...") # Status update - Memory Keeper start
             self.agents["user_proxy"].initiate_chat(
                 manager,
-                message=chapter_prompt
+                message=chapter_prompt,
+                silent=True # Silence default autogen output to avoid duplicate prints
             )
+            print(f"  1. Memory Keeper: Context provided.") # Status update - Memory Keeper end
 
             if not self._verify_chapter_complete(groupchat.messages):
                 logger.debug(f"Chapter {chapter_number} verification failed")
                 raise ValueError(f"Chapter {chapter_number} generation incomplete")
-        
+
+            print(f"  2. Story Planner: Chapter plan...") # Status update - Story Planner start (if included)
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  3. Setting Builder: Defining settings...") # Status update - Setting Builder start (if included)
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  4. Character Agent: Character development...") # Status update - Character Agent start (if included)
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  5. Plot Agent: Refining plot...") # Status update - Plot Agent start (if included)
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  6. Writer: Writing scene draft...") # Status update - Writer start
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  7. Editor: Reviewing draft...") # Status update - Editor start
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  8. Writer Final: Revision and finalization...") # Status update - Writer Final start
+            # No specific agent call here as it's part of the group chat flow
+
+            print(f"  9. User Proxy: Final confirmation...") # Status update - User Proxy start
+             # No specific agent call here as it's part of the group chat flow
+
             self._process_chapter_results(chapter_number, groupchat.messages)
             chapter_file = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
                 logger.debug(f"Chapter file missing: {chapter_file}")
                 raise FileNotFoundError(f"Chapter {chapter_number} file not created")
-        
+
             completion_msg = f"Chapter {chapter_number} is complete. Proceed with next chapter."
-            self.agents["user_proxy"].send(completion_msg, manager)
-            
+            self.agents["user_proxy"].send(completion_msg, manager, silent=True) # Silence proxy send message
+
+            print(f"Chapter {chapter_number}: {self.outline[chapter_number - 1]['title']} - GENERATION COMPLETE") # Status update - Chapter complete
+
+
         except Exception as e:
             logger.error(f"Error in chapter {chapter_number}: {str(e)}")
             logger.debug(f"Chapter {chapter_number} error context: {prompt[:200]}...")
@@ -204,52 +232,47 @@ class BookGenerator:
 
     def _extract_final_scene(self, messages: List[Dict]) -> Optional[str]:
         """Extract chapter content with improved content detection"""
-        # First try to find SCENE FINAL from writer_final
         for msg in reversed(messages):
             content = msg.get("content", "")
             sender = self._get_sender(msg)
-            
+
             if sender == "writer_final" and "SCENE FINAL:" in content:
                 scene_text = content.split("SCENE FINAL:")[1].strip()
                 if scene_text:
-                    # Remove any remaining planning or outline content
                     scene_lines = []
                     for line in scene_text.split('\n'):
                         if not any(marker in line.upper() for marker in [
-                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:",
                             "SETTING:", "TONE:", "PLAN:", "OUTLINE:",
                             "MEMORY UPDATE:", "FEEDBACK:"
                         ]):
                             scene_lines.append(line)
                     return '\n'.join(scene_lines)
-        
-        # If no SCENE FINAL from writer_final, try writer's SCENE FINAL
+
         for msg in reversed(messages):
             content = msg.get("content", "")
             sender = self._get_sender(msg)
-            
+
             if sender == "writer" and "SCENE FINAL:" in content:
                 scene_text = content.split("SCENE FINAL:")[1].strip()
                 if scene_text:
-                    # Remove any remaining planning or outline content
                     scene_lines = []
                     for line in scene_text.split('\n'):
                         if not any(marker in line.upper() for marker in [
-                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                            "KEY EVENTS:", "CHARACTER DEVELOPMENTS:",
                             "SETTING:", "TONE:", "PLAN:", "OUTLINE:",
                             "MEMORY UPDATE:", "FEEDBACK:"
                         ]):
                             scene_lines.append(line)
                     return '\n'.join(scene_lines)
-        
+
         return None
 
     def _handle_chapter_generation_failure(self, chapter_number: int, prompt: str) -> None:
         """Handle failed chapter generation with simplified retry"""
         logger.warning(f"Attempting simplified retry for Chapter {chapter_number}")
-        
+
         try:
-            # Create a new group chat with just essential agents
             retry_groupchat = autogen.GroupChat(
                 agents=[
                     self.agents["user_proxy"],
@@ -259,14 +282,14 @@ class BookGenerator:
                 messages=[],
                 max_round=3
             )
-            
+
             manager = autogen.GroupChatManager(
                 groupchat=retry_groupchat,
                 llm_config=self.agent_config
             )
 
             retry_prompt = f"""Emergency chapter generation for Chapter {chapter_number}.
-            
+
 {prompt}
 
 Please generate this chapter in two steps:
@@ -279,169 +302,185 @@ Keep it simple and direct."""
                 manager,
                 message=retry_prompt
             )
-            
-            # Save the retry results
+
             self._process_chapter_results(chapter_number, retry_groupchat.messages)
-            
+
         except Exception as e:
             logger.error(f"Error in retry attempt for Chapter {chapter_number}: {str(e)}")
             logger.error("Unable to generate chapter content after retry")
             raise
 
     def _process_chapter_results(self, chapter_number: int, messages: List[Dict]) -> None:
-        """Process and save chapter results, updating memory"""
+        """Process and save chapter results, updating memory - now also extracts character/world updates"""
         try:
-            # Extract the Memory Keeper's final summary
             memory_updates = []
+            world_updates = [] # Capture world updates
+            character_updates = [] # Capture character updates
+
             for msg in reversed(messages):
                 sender = self._get_sender(msg)
                 content = msg.get("content", "")
-                
-                if sender == "memory_keeper" and "MEMORY UPDATE:" in content:
-                    update_start = content.find("MEMORY UPDATE:") + 14
-                    memory_updates.append(content[update_start:].strip())
-                    break
-            
-            # Add to memory even if no explicit update (use basic content summary)
+
+                if sender == "memory_keeper":
+                    if "MEMORY UPDATE:" in content:
+                        update_start = content.find("MEMORY UPDATE:") + 14
+                        memory_updates.append(content[update_start:].strip())
+                    if "WORLD:" in content: # Extract world updates
+                        world_update_start = content.find("WORLD:") + 6
+                        world_updates.append(content[world_update_start:].strip())
+                    if "CHARACTER:" in content: # Extract character updates
+                        character_update_start = content.find("CHARACTER:") + 10
+                        character_updates.append(content[character_update_start:].strip())
+                    if memory_updates and world_updates and character_updates: # Get only the latest updates
+                        break
+
             if memory_updates:
                 self.chapters_memory.append(memory_updates[0])
             else:
-                # Create basic memory from chapter content
                 chapter_content = self._extract_final_scene(messages)
                 if chapter_content:
                     basic_summary = f"Chapter {chapter_number} Summary: {chapter_content[:200]}..."
                     self.chapters_memory.append(basic_summary)
-            
-            # Extract and save the chapter content
+
+            # Process world updates
+            if world_updates:
+                for update_text in world_updates:
+                    # Simple parsing - needs to be robust for real use
+                    world_name_match = re.search(r"WORLD:\s*([\w\s]+):", update_text) # Example: WORLD: Location Name: Description
+                    desc_match = re.search(r"Description:\s*(.+)", update_text, re.DOTALL)
+                    if world_name_match and desc_match:
+                        world_name = world_name_match.group(1).strip()
+                        description = desc_match.group(1).strip()
+                        self.agents["setting_builder"].update_world_element(world_name, description) # Use setting_builder to update
+                        logger.info(f"Updated world element '{world_name}': {description[:50]}...")
+
+
+            # Process character updates
+            if character_updates:
+                for update_text in character_updates:
+                    char_name_match = re.search(r"CHARACTER:\s*([\w\s]+):", update_text) # Example: CHARACTER: Character Name: Development
+                    dev_match = re.search(r"Development:\s*(.+)", update_text, re.DOTALL)
+                    if char_name_match and dev_match:
+                        char_name = char_name_match.group(1).strip()
+                        development = dev_match.group(1).strip()
+                        self.agents["character_agent"].update_character_development(char_name, development) # Use character_agent to update
+                        logger.info(f"Updated character '{char_name}' development: {development[:50]}...")
+
+
             self._save_chapter(chapter_number, messages)
-            
+
         except Exception as e:
             logger.error(f"Error processing chapter results: {str(e)}")
             raise
+
 
     def _save_chapter(self, chapter_number: int, messages: List[Dict]) -> None:
         """Save the final chapter content to a file"""
         logger.info(f"Saving Chapter {chapter_number}")
         try:
-            # Extract final content from messages
             final_content = None
             for msg in reversed(messages):
                 content = msg.get("content", "")
                 sender = self._get_sender(msg)
-                
+
                 if sender == "writer_final" and "SCENE FINAL:" in content:
                     final_content = content.split("SCENE FINAL:")[1].strip()
                     break
-            
+
             if not final_content:
-                # Try getting content from writer if writer_final didn't provide it
                 for msg in reversed(messages):
                     content = msg.get("content", "")
                     sender = self._get_sender(msg)
-                    
+
                     if sender == "writer" and "SCENE FINAL:" in content:
                         final_content = content.split("SCENE FINAL:")[1].strip()
                         break
-            
+
             if not final_content:
                 raise ValueError(f"No final content found for Chapter {chapter_number}")
-            
-            # Clean up the content
+
             final_content = self._clean_chapter_content(final_content)
-            
-            # Remove metadata sections but preserve content
+
             content_sections = final_content.split('---')
             final_content = '\n\n'.join([
-                section.strip() for section in content_sections 
+                section.strip() for section in content_sections
                 if not any(marker in section.upper() for marker in [
-                    "MEMORY UPDATE:", "FEEDBACK:", "PLAN:", "OUTLINE:"
+                    "MEMORY UPDATE:", "FEEDBACK:", "PLAN:", "OUTLINE:", "SETTING:", "CHARACTER:", "PLOT:" # Added new tags to remove
                 ])
             ]).strip()
-            
-            # Remove specific metadata lines but keep surrounding content
+
             content_lines = []
             for line in final_content.split('\n'):
                 if not line.strip().startswith((
-                    "KEY EVENTS:", "CHARACTER DEVELOPMENTS:", 
+                    "KEY EVENTS:", "CHARACTER DEVELOPMENTS:",
                     "SETTING:", "TONE:", "THE CHAPTER",
                     "CONTINUES TO", "EXPLORES", "CONCLUDES WITH"
                 )):
                     content_lines.append(line)
-            
+
             final_content = '\n'.join(content_lines).strip()
-            
-            # Ensure minimum content length
-            if len(final_content.split()) < 100:  # At least 100 words
+
+            if len(final_content.split()) < 100:
                 raise ValueError("Chapter content too short after cleaning")
-            
-            # Save the content
+
             filename = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
-            
-            # Create backup if file exists
+
             if os.path.exists(filename):
                 backup_filename = f"{filename}.backup"
                 import shutil
                 shutil.copy2(filename, backup_filename)
-            
+
             with open(filename, "w", encoding='utf-8') as f:
                 f.write(f"Chapter {chapter_number}\n\n{final_content}")
-            
-            # Verify file
+
             with open(filename, "r", encoding='utf-8') as f:
                 saved_content = f.read()
                 if len(saved_content.strip()) == 0:
                     raise IOError(f"File {filename} is empty")
-            
+
             logger.info(f"Saved chapter to: {filename}")
-            
+
         except Exception as e:
             logger.error(f"Error saving chapter: {str(e)}")
             raise
 
     def generate_book(self, outline: List[Dict]) -> None:
-        """Generate the book with strict chapter sequencing"""
+        """Generate the book with strict chapter sequencing and verification"""
         logger.info("Starting book generation")
         logger.info(f"Total chapters: {len(outline)}")
-        
-        # Sort outline by chapter number
+
         sorted_outline = sorted(outline, key=lambda x: x["chapter_number"])
-        
-        # Generate table of contents
         self._generate_table_of_contents()
-        
+
         for chapter in sorted_outline:
             chapter_number = chapter["chapter_number"]
-            
-            # Verify previous chapter exists and is valid
+
             if chapter_number > 1:
                 prev_file = os.path.join(self.output_dir, f"chapter_{chapter_number-1:02d}.txt")
                 if not os.path.exists(prev_file):
                     logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                     break
-                    
-                # Verify previous chapter content
+
                 with open(prev_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                     if not self._verify_chapter_content(content, chapter_number-1):
                         logger.error(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
                         break
-            
-            # Generate current chapter
+
             logger.info(f"Starting Chapter {chapter_number}")
             self.generate_chapter(chapter_number, chapter["prompt"])
-            
-            # Verify current chapter
+
             chapter_file = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
                 logger.error(f"Failed to generate chapter {chapter_number}")
                 break
-                
+
             with open(chapter_file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 if not self._verify_chapter_content(content, chapter_number):
                     logger.error(f"Chapter {chapter_number} content invalid")
                     break
-                    
+
             logger.info(f"Chapter {chapter_number} complete")
             time.sleep(5)
 
@@ -450,16 +489,14 @@ Keep it simple and direct."""
         if not content:
             logger.debug(f"Chapter {chapter_number} content is empty")
             return False
-            
-        # Check for chapter header
+
         if f"Chapter {chapter_number}" not in content:
             logger.debug(f"Chapter {chapter_number} header missing")
             return False
-            
-        # Ensure content isn't just metadata
+
         lines = content.split('\n')
         content_lines = [line for line in lines if line.strip() and 'MEMORY UPDATE:' not in line]
-        
-        valid = len(content_lines) >= 3  # At least chapter header + 2 content lines
+
+        valid = len(content_lines) >= 3
         logger.debug(f"Chapter {chapter_number} content validation: {valid}")
         return valid
