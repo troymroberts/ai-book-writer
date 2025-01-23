@@ -36,7 +36,8 @@ class LLMSettings(BaseSettings):
         'gemini-flash/gemini-flash',
         'ollama/llama2',
         'ollama/mistral',
-        'ollama/codellama'
+        'ollama/codellama',
+        'ollama/deepseek-r1-32b' # ADDED: ollama/deepseek-r1-32b to allowed models
     ] = Field(default='ollama/llama2', description="Selected LLM model")
 
     ollama_base_url: Optional[str] = Field(
