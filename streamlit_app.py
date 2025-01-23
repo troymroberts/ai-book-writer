@@ -217,7 +217,7 @@ def main():
         selected_model = st.selectbox(
             "Select Model",
             model_options if model_options else ["Please select provider type first"], # Placeholder if no options
-            index=0 if model_options else 0,
+            index=0 if model_options and env_dict.get('LLM__MODEL') in model_options else 0, # Set index only if model_options is not empty and env model is valid
             disabled=not model_options, # Disable if no model options loaded
             help="Select the specific LLM model to use from the chosen provider. The list of models is dynamically updated based on the selected provider type. For Ollama, this list is populated from your local Ollama server."
         )

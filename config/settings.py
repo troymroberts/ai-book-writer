@@ -24,7 +24,7 @@ class LLMSettings(BaseSettings):
         """Serialize SecretStr fields for JSON compatibility"""
         return value.get_secret_value() if value else None
 
-    model: Literal[
+    model: Optional[Literal[
         'mistral-nemo-instruct-2407',
         'openai/gpt-4',
         'openai/gpt-3.5-turbo',
@@ -37,8 +37,8 @@ class LLMSettings(BaseSettings):
         'ollama/llama2',
         'ollama/mistral',
         'ollama/codellama',
-        'ollama/deepseek-r1-32b' # ADDED: ollama/deepseek-r1-32b to allowed models
-    ] = Field(default='ollama/llama2', description="Selected LLM model")
+        'ollama/deepseek-r1-32b'
+    ]] = Field(default=None, description="Selected LLM model")
 
     ollama_base_url: Optional[str] = Field(
         default="http://localhost:11434",
@@ -127,8 +127,9 @@ class LLMSettings(BaseSettings):
             config["api_key"] = self.groq_api_key.get_secret_value()
         elif "mistral" in self.model and self.mistral_nemo_base_url:
             config["base_url"] = str(self.mistral_nemo_base_url)
-        elif "ollama" in self.model and self.ollama_base_url: # Added Ollama base_url config
+        elif "ollama" in self.model and self.ollama_base_url:
              config["base_url"] = str(self.ollama_base_url)
+
 
         return config
 
