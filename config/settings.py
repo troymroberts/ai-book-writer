@@ -33,8 +33,16 @@ class LLMSettings(BaseSettings):
         'deepseek-chat',
         'gemini/gemini-pro',
         'groq/llama2-70b-4096',
-        'gemini-flash/gemini-flash'
-    ] = Field(default='openai/gpt-4', description="Selected LLM model")
+        'gemini-flash/gemini-flash',
+        'ollama/llama2',
+        'ollama/mistral',
+        'ollama/codellama'
+    ] = Field(default='ollama/llama2', description="Selected LLM model")
+    
+    ollama_base_url: Optional[str] = Field(
+        default="http://localhost:11434",
+        description="Base URL for Ollama API"
+    )
     
     openai_api_key: Optional[SecretStr] = Field(
         default=None,

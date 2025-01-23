@@ -73,6 +73,37 @@ class GroqImplementation(LiteLLMBase):
             **kwargs
         )
 
+class OllamaImplementation(LiteLLMBase):
+    """Implementation for Ollama models"""
+    
+    def __init__(self, model: str, api_key: str = None, **kwargs):
+        super().__init__(
+            model=f"ollama/{model}",
+            base_url=os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434'),
+            api_key=api_key,  # Ollama typically doesn't need an API key for local deployment
+            **kwargs
+        )
+        
+    def generate_text(self, prompt: str, **kwargs) -> str:
+        """Generate text using Ollama model"""
+        response = self.generate(prompt, **kwargs)
+        return response
+        
+    def generate_chat_completion(
+        self,
+        messages: list,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """Generate chat completion using Ollama model"""
+        return super().generate(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs
+        )
+
 class O1PreviewImplementation(LiteLLMBase):
     """Implementation for O1-Preview models"""
     
