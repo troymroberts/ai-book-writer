@@ -8,6 +8,7 @@ from ebooklib import epub
 from datetime import datetime
 from pathlib import Path
 import glob
+import json
 import markdown
 import subprocess
 import signal  # Import the signal module
@@ -325,35 +326,52 @@ def main():
         with col1:
             initial_prompt_text = st.text_area("Initial Book Prompt", value=env_dict.get('INITIAL_BOOK_PROMPT', 'Write a book about a dystopian future where AI controls society.'))
             num_chapters = st.number_input("Number of Chapters", min_value=5, max_value=30, value=int(env_dict.get('NUM_CHAPTERS', 10)), step=1, help="Set the number of chapters for your book.")
+            custom_outline = st.text_area("Custom Outline (Optional, overrides genre template)") # <-- ADDED CUSTOM OUTLINE INPUT
             if st.button("Generate Book"):
                 print("\n--- Generate Book Button Clicked ---") # ADD THIS LINE
-                if not initial_prompt_text:
-                    st.error("Please enter an initial book prompt.")
-                else:
-                    st.session_state.generation_status = "Generating Outline"
-                    st.session_state.current_chapter = 1
-                    st.session_state.preview_content = ""
-                    st.session_state.stop_generation = False  # Reset stop flag
-                    env_dict['INITIAL_BOOK_PROMPT'] = initial_prompt_text
-                    env_dict['NUM_CHAPTERS'] = str(num_chapters)
-                    save_env_file(env_dict)
+                api_key = env_dict.get('LLM__DEEPSEEK_API_KEY') # Example for DeepSeek, adjust as needed
 
-                    # Prepare and start book generation process
-                    api_key = env_dict.get('LLM__DEEPSEEK_API_KEY') # Example for DeepSeek, adjust as needed
-                    progress_bar = st.progress(0)
-                    status_text_area = st.empty()
-                    print("Before subprocess.Popen") # ADD THIS LINE
-                    st.session_state.process = subprocess.Popen(
-                        ["./venv/bin/python", "main.py"], # Explicit path to venv python (Linux/macOS)
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        env=os.environ.copy(), # Inherit current env vars
-                        preexec_fn=os.setsid, # Allow graceful termination
-                        cwd=os.getcwd() # Set current working directory
-                    )
-                    print("After subprocess.Popen") # ADD THIS LINE
-                    st.session_state.generation_status = "Generating Book Content"
+                if not api_key and selected_provider_type != "Ollama": # <-- Adjusted API key check
+                    st.error("Please enter your API key in the Configuration tab.") # <-- More informative message
+                    print("Error: API key missing or provider is not Ollama") # Log error to console too
+                    return
+
+                # Save custom outline if provided
+                if custom_outline:
+                    os.makedirs('book_output', exist_ok=True)
+                    with open('book_output/custom_outline.txt', 'w') as f:
+                        f.write(custom_outline)
+                    os.environ['CUSTOM_OUTLINE'] = "book_output/custom_outline.txt" # Set env var for custom outline
+                    print(f"Custom outline saved to book_output/custom_outline.txt and CUSTOM_OUTLINE env var set") # Log custom outline saving
+                else:
+                    os.environ.pop('CUSTOM_OUTLINE', None) # Ensure custom outline env var is unset if no custom outline provided
+                    print("CUSTOM_OUTLINE environment variable unset (using generated outline)") # Log outline type
+
+                st.session_state.generation_status = "Generating Outline"
+                st.session_state.current_chapter = 1
+                st.session_state.preview_content = ""
+                st.session_state.stop_generation = False  # Reset stop flag
+                env_dict['INITIAL_BOOK_PROMPT'] = initial_prompt_text
+                env_dict['NUM_CHAPTERS'] = str(num_chapters)
+                save_env_file(env_dict)
+
+                # Prepare and start book generation process
+                progress_bar = st.progress(0)
+                status_text_area = st.empty()
+                print("Before subprocess.Popen") # ADD THIS LINE
+                st.session_state.process = subprocess.Popen(
+                    ["./quickstart.sh"], # Or "./quickstart.sh" if you prefer using the script
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    env=os.environ.copy(), # Inherit current env vars
+                    preexec_fn=os.setsid, # Allow graceful termination
+                    cwd=os.getcwd() # Set current working directory
+                )
+                print("After subprocess.Popen") # ADD THIS LINE
+                st.session_state.generation_status = "Generating Book Content"
                 print("--- End Generate Book Button Clicked ---\n") # ADD THIS LINE
+
 
         with col2:
             st.markdown("### Generation Status")
@@ -433,9 +451,49 @@ def main():
                     st.success(f"PDF file created at: {output_pdf_path}")
 
 
-def generate_book_process(api_key, progress_bar, status_text_area):
-    # ... (rest of your generate_book_process function - unchanged - paste from previous version) ...
-    pass # placeholder to avoid further errors, replace with actual function content
+def generate_book_process(api_key, progress_bar, status_text_area): # <-- DEFINED HERE NOW
+    # Generation status and controls
+    if not api_key:
+        st.error("Please enter your API key")
+        return
+
+    # Generate book
+    with st.spinner("Generating your book..."):
+        try:
+            process = subprocess.Popen(
+                ['./quickstart.sh'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True
+            )
+
+            # Show progress
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    status_text.text(output.strip())
+                    if "Chapter" in output:
+                        try:
+                            chapter_num = int(output.split("Chapter")[1].split()[0])
+                            progress = min(chapter_num / 10, 1.0)  # Assuming 10 chapters
+                            progress_bar.progress(progress)
+                        except:
+                            pass
+
+            if process.returncode == 0:
+                st.success("Book generation completed!")
+                st.session_state.generation_status = "completed"
+            else:
+                st.error("Book generation failed!")
+                st.session_state.generation_status = "failed"
+        except Exception as e:
+            st.error(f"Error generating book: {str(e)}")
+            st.session_state.generation_status = "failed"
 
 
 if __name__ == "__main__":
