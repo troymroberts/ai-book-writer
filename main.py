@@ -1,4 +1,6 @@
 """Main script for running the book generation system - now with SIGTERM signal handling"""
+import litellm   # ADD THIS LINE
+litellm.set_verbose = True  # ADD THIS LINE
 import os
 import logging
 from logging.config import dictConfig
