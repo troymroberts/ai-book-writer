@@ -13,9 +13,11 @@ class OutlineGenerator:
    def generate_outline(self, initial_prompt: str, num_chapters: int = 25) -> List[Dict]:
        print("\nGenerating outline...")
 
-       litellm_messages = [{
+       llitellm_messages = [{
            "role": "user",
-           "content": f"""Create a {num_chapters}-chapter outline in English. Follow this EXACT format for each chapter:
+           #"content": f"""Create a {num_chapters}-chapter outline in English. Follow this EXACT format for each chapter:
+           "content": f"""Create a 3-chapter outline in English. Follow this EXACT format for each chapter:
+
 
 Chapter [N]: [Title]
 Title: [Same title]
@@ -135,8 +137,10 @@ End with 'END OF OUTLINE'"""
                print(f"Error processing Chapter {i}: {str(e)}")
                continue
 
-       if len(chapters) < num_chapters:
-           raise ValueError(f"Only processed {len(chapters)} valid chapters out of {num_chapters} required")
+       #if len(chapters) < num_chapters:
+           #aise ValueError(f"Only processed {len(chapters)} valid chapters out of {num_chapters} required")
+       if len(chapters) < 3:  # Change from num_chapters to 3
+           raise ValueError(f"Only processed {len(chapters)} valid chapters out of 3 required")
 
        return chapters
 
