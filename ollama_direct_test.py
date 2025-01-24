@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = "http://localhost:11434/api/generate" # <--- Construct the full URL based on documentation!
+url = "http://localhost:11434/api/v1/generate" # <--- Construct the full URL based on documentation!
 
 payload = {
     "model": "deepseek-r1:14b", # Or "deepseek-r1" - try both
@@ -13,7 +13,7 @@ try:
     response = requests.post(url, data=json.dumps(payload), headers=headers)
     response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)
     print("\n--- Successful Response from Ollama (Direct API Call Test) ---")
-    print(response.json()) # Or response.text if it's plain text
+    print(response.text) # Try response.text instead of response.json()
 except requests.exceptions.RequestException as e:
     print("\n--- Error in Direct API Call Test ---")
     print(f"Error connecting to Ollama API endpoint: {e}")
