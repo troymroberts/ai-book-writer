@@ -89,15 +89,15 @@ End with 'END OF OUTLINE'"""
            return self._emergency_outline_processing(messages, num_chapters)
 
        chapters = []
-       chapter_sections = re.split(r'Chapter \d+:', outline_content)
+       chapter_sections = re.split(r'\nChapter \d+:', outline_content)
 
        for i, section in enumerate(chapter_sections[1:], 1):
            try:
-               title_match = re.search(r'Chapter \d+: (.+?)(?=\n|$)', section, re.IGNORECASE)
-               events_match = re.search(r'Key Events:\n-[^\n]*\n-[^\n]*\n-[^\n]*', section, re.DOTALL | re.IGNORECASE)
-               character_match = re.search(r'Character Developments: ([^\n]+)', section, re.IGNORECASE)
-               setting_match = re.search(r'Setting: ([^\n]+)', section, re.IGNORECASE)
-               tone_match = re.search(r'Tone: ([^\n]+?)(?=\n|$)', section, re.IGNORECASE)
+               title_match = re.search(r'Title: (.+?)(?=\nKey Events:|$)', section, re.IGNORECASE)
+               events_match = re.search(r'Key Events:\s*\n-(.+?)\n-(.+?)\n-(.+?)(?=\nCharacter Developments:|$)', section, re.DOTALL | re.IGNORECASE)
+               character_match = re.search(r'Character Developments: (.+?)(?=\nSetting:|$)', section, re.DOTALL | re.IGNORECASE)
+               setting_match = re.search(r'Setting: (.+?)(?=\nTone:|$)', section, re.DOTALL | re.IGNORECASE) 
+               tone_match = re.search(r'Tone: (.+?)(?=\n\n|$)', section, re.DOTALL | re.IGNORECASE)
 
                if not all([title_match, events_match, character_match, setting_match, tone_match]):
                    print(f"Missing required components in Chapter {i}")
