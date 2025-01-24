@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = "http://localhost:11434/api/v1/generate" # <--- Construct the full URL based on documentation!
+url = "http://localhost:11434/api/generate" # <--- Construct the full URL based on documentation!
 
 payload = {
     "model": "deepseek-r1:14b", # Or "deepseek-r1" - try both
