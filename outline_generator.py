@@ -41,6 +41,8 @@ End with 'END OF OUTLINE'"""
                base_url="http://localhost:11434"
            )
            
+           print(f"LLM Response: {response.choices[0].message.content}")  # Add here
+           
            outline_content = response.choices[0].message.content
            return self._process_outline_results([{"content": outline_content}], num_chapters)
 

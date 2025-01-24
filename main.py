@@ -64,7 +64,8 @@ def main():
     genre_config = load_genre_config(genre)
     logger.debug(f"Loaded genre config: {genre_config}")
 
-    initial_prompt = """... (your initial prompt text - unchanged) ...""" # Keep your initial prompt
+    initial_prompt = "Write a book about a dystopian future where AI controls society."  # Example prompt
+    print(f"Initial prompt: {initial_prompt}")
 
     num_chapters = settings.generation.max_chapters
     # --- MOVED BookAgents and agents CREATION UP HERE, BEFORE the if/else block ---
