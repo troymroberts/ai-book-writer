@@ -2,7 +2,6 @@
 #!/usr/bin/env python3
 print("--- main.py script started ---")
 print("--- Debugging main.py: CUSTOM_OUTLINE check ---")
-Python sys.path: ['/root/ai-book-writer', '/usr/lib/python312.zip', '/usr/lib/python3.12', '/usr/lib/python3.12/lib-dynload', '/root/ai-book-writer/venv/lib/python3.12/site-packages']
 import os
 import logging
 from logging.config import dictConfig
