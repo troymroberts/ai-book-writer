@@ -8,7 +8,8 @@ from logging.config import dictConfig
 from config import get_settings
 import signal
 import sys
-print(f"Python sys.path: {sys.path}") # Print Python path for debugging
+
+print(f"Python sys.path: {sys.path}")  # Print Python path for debugging
 
 # Configure logging (simplified for brevity)
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +30,33 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGTERM, signal_handler)
 
 def load_custom_outline(outline_path):
-    # ... (rest of your load_custom_outline function - unchanged) ...
+    chapters = []
+    if os.path.exists(outline_path):
+        with open(outline_path, 'r') as f:
+            lines = f.readlines()
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+                if line.startswith("Chapter"):
+                    chapter_num = int(line.split(":")[0].split(" ")[1])
+                    title = line.split(":")[1].strip()
+                    i += 2  # Skip the separator line
+                    prompt_lines = []
+                    while i < len(lines) and not lines[i].strip().startswith("Chapter"):
+                        prompt_line = lines[i].strip()
+                        if prompt_line:
+                            prompt_lines.append(prompt_line)
+                        i += 1
+                    prompt = "\n".join(prompt_lines)
+                    chapters.append({
+                        "chapter_number": chapter_num,
+                        "title": title,
+                        "prompt": prompt
+                    })
+                else:
+                    i += 1
+    else:
+        print(f"Custom outline file not found at {outline_path}")
     return chapters
 
 def load_genre_config(genre_name=None):
@@ -70,12 +97,11 @@ def main():
     num_chapters = settings.generation.max_chapters
     # --- MOVED BookAgents and agents CREATION UP HERE, BEFORE the if/else block ---
     # Create agents with genre configuration (BookAgents now expects outline=None initially)
-    outline_agents = BookAgents(settings.llm, None, genre_config) # Pass outline=None initially
+    outline_agents = BookAgents(settings.llm, None, genre_config)  # Pass outline=None initially
     print("--- BookAgents (outline) created in main.py ---")
     agents = outline_agents.create_agents(initial_prompt, num_chapters)
     print("--- Agents created in main.py ---")
     # --- END MOVED SECTION ---
-
 
     # Check if using custom outline
     custom_outline_path = os.getenv('CUSTOM_OUTLINE')
@@ -95,21 +121,30 @@ def main():
         logger.info("No custom outline provided - generating outline automatically.")
         llm_config = settings.get_llm_config()
         print("--- llm_config obtained in main.py ---")
-        outline_gen = OutlineGenerator(agents, llm_config) # 'agents' is now defined BEFORE OutlineGenerator
-        print("--- OutlineGenerator created in main.py ---")
-        logger.info("Generating book outline...")
+        print("--- Before OutlineGenerator ---")
+        outline_gen = OutlineGenerator(agents, llm_config)  # 'agents' is now defined BEFORE OutlineGenerator
+        print("--- After OutlineGenerator ---")
+        print("--- Before generate_outline ---")
         outline = outline_gen.generate_outline(initial_prompt, num_chapters)
-        print("--- Outline generated (or attempted) in main.py ---")
+        print("--- After generate_outline ---")
         if not outline:
             logger.error("Outline generation failed.")
             return
 
     # Create new agents with outline context and genre configuration (now using book_agents, not outline_agents)
-    book_agents = BookAgents(settings.llm, outline, genre_config) # Re-create BookAgents with outline
-    agents_with_context = book_agents.create_agents(initial_prompt, num_chapters) # Re-create agents with context
+    book_agents = BookAgents(settings.llm, outline, genre_config)  # Re-create BookAgents with outline
+    agents_with_context = book_agents.create_agents(initial_prompt, num_chapters)  # Re-create agents with context
 
-    # ... (rest of main() function - logging, book generation, etc. - unchanged) ...
+    # Use the new agents for book generation
+    book_generator = BookGenerator(agents_with_context, settings.get_llm_config(), outline)
+    print("--- BookGenerator created in main.py ---")
 
+    # Start book generation process
+    print("--- Starting book generation in main.py ---")
+    book_generator.generate_book(outline)
+    print("--- Book generation process finished in main.py ---")
+
+    print("--- main() function in main.py finished ---")
 
 if __name__ == "__main__":
     main()
