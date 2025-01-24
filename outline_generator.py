@@ -2,7 +2,7 @@
 import autogen
 from typing import Dict, List
 import re
-import litellm # ADD THIS LINE - Import litellm
+import litellm  # IMPORT LITELM - Ensure this line is present
 
 class OutlineGenerator:
     def __init__(self, agents: Dict[str, autogen.ConversableAgent], agent_config: Dict):
@@ -45,7 +45,7 @@ Make sure there are at least 3 scenes in each chapter.
 
 Please output all chapters, do not leave out any chapters. Think through every chapter carefully, none should be to be determined later
 It is of utmost importance that you detail out every chapter, do not combine chapters, or leave any out
-There should be clear content for each chapter. There should be a total of {num_chapters} chapters.
+There should be clear content for each chapter. There should be a total of 10 chapters.
 
 End the outline with 'END OF OUTLINE'"""
 
