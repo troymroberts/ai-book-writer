@@ -44,7 +44,7 @@ print("--- Logging configuration loaded in main.py ---") # ADD THIS LINE
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
-from llm.deepseek_client import DeepSeekClient
+# REMOVE THIS LINE: from llm.deepseek_client import DeepSeekClient  <- REMOVE THIS LINE
 
 # Global flag to signal stop generation
 stop_book_generation = False
@@ -59,10 +59,11 @@ def signal_handler(sig, frame):
 # Register signal handler
 signal.signal(signal.SIGTERM, signal_handler)
 
-# Initialize DeepSeek client with configuration
-settings = get_settings()
-llm_config = settings.get_llm_config()
-deepseek_client = DeepSeekClient(config=llm_config)
+# REMOVE THESE LINES:
+# Initialize DeepSeek client with configuration  <- REMOVE THIS LINE
+# settings = get_settings()  <- REMOVE THIS LINE
+# llm_config = settings.get_llm_config()  <- REMOVE THIS LINE
+# deepseek_client = DeepSeekClient(config=llm_config)  <- REMOVE THIS LINE
 
 def load_custom_outline(outline_path):
     """Load a custom outline from file"""
@@ -358,7 +359,7 @@ def main():
 
             # Verify previous chapter exists and is valid
             if chapter_number > 1:
-                prev_file = os.path.join("book_output", f"chapter_{chapter_number - 1:02d}.txt") # Corrected path
+                prev_file = os.path.join("book_output", f"chapter_{chapter_number-1:02d}.txt") # Corrected path
                 if not os.path.exists(prev_file):
                     logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                     break
