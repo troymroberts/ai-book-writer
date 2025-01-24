@@ -1,16 +1,16 @@
 """Main script for running the book generation system - now with SIGTERM signal handling"""
 #!/usr/bin/env python3
-print("--- main.py script started ---")  # ADD THIS LINE
-print("--- Initializing main.py logging ---") # ADD THIS LINE
-import litellm   # ADD THIS LINE
-litellm.set_verbose = True  # ADD THIS LINE
-print("--- litellm.set_verbose = True executed ---") # ADD THIS LINE
+print("--- main.py script started ---")
+print("--- Initializing main.py logging ---")
+import litellm
+litellm.set_verbose = True
+print("--- litellm.set_verbose = True executed ---")
 import os
 import logging
 from logging.config import dictConfig
 from config import get_settings
-import signal  # Import signal module
-import sys  # Import sys module for exit
+import signal
+import sys
 
 # Configure logging
 logging_config = {
@@ -40,7 +40,7 @@ logging_config = {
 
 dictConfig(logging_config)
 logger = logging.getLogger(__name__)
-print("--- Logging configuration loaded in main.py ---") # ADD THIS LINE
+print("--- Logging configuration loaded in main.py ---")
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
@@ -51,9 +51,9 @@ stop_book_generation = False
 def signal_handler(sig, frame):
     """Signal handler to catch SIGTERM and set stop flag"""
     global stop_book_generation
-    print("\nStopping book generation process...")  # Indicate stop signal received
+    print("\nStopping book generation process...")
     stop_book_generation = True
-    sys.exit(0)  # Gracefully exit after setting flag
+    sys.exit(0)
 
 # Register signal handler
 signal.signal(signal.SIGTERM, signal_handler)
@@ -184,20 +184,20 @@ def display_startup_info(genre_config, outline):
     input("\nPress Enter to start book generation...")
 
 def main():
-    print("--- main() function in main.py started ---") # ADD THIS LINE
-    global stop_book_generation  # Use the global flag
+    print("--- main() function in main.py started ---")
+    global stop_book_generation
 
     # Check if genre is selected
     genre = os.getenv('BOOK_GENRE')
-    print(f"--- BOOK_GENRE env var in main.py: {genre} ---") # ADD THIS LINE
+    print(f"--- BOOK_GENRE env var in main.py: {genre} ---")
     if not genre:
         print("No genre selected. Please run './select_genre.py' first to choose a genre.")
         print("Example: ./select_genre.py")
         return
 
     # Get base configuration
-    settings = get_settings() # Keep this line as is
-    print("--- Settings object created in main.py ---") # ADD THIS LINE
+    settings = get_settings()
+    print("--- Settings object created in main.py ---")
 
     # Validate API keys based on model requirements
     model_lower = settings.llm.model.lower()
@@ -243,72 +243,18 @@ def main():
             return
         logger.info(f"Successfully loaded outline with {len(outline)} chapters")
     else:
-        logger.error(f"Custom outline not found at: {custom_outline_path}")
-        return
-
-    # Display startup information and wait for user confirmation
-    display_startup_info(genre_config, outline)
-
-    # Initial prompt for the book
-    initial_prompt = """
-    Create a story in my established writing style with these key elements:
-    It's important that it has several key storylines that intersect and influence each other.
-    The story should be set in a modern corporate environment, with a focus on technology and finance.
-    The protagonist is a software engineer named Dane who has just completed a groundbreaking stock prediction algorithm.
-    The algorithm predicts a catastrophic market crash, but Dane oversleeps and must rush to an important presentation
-    to share his findings with executives. The tension arises from the questioning of whether his "error" might actually be correct.
-
-    The piece is written in third-person limited perspective, following Dane's thoughts and experiences.
-    The prose is direct and technical when describing the protagonist's work, but becomes more introspective
-    during personal moments. The author employs a mix of dialogue and internal monologue, with particular
-    attention to time progression and technical details around the algorithm and stock predictions.
-
-    Story Arch:
-    - Setup: Dane completes a groundbreaking stock prediction algorithm late at night
-    - Initial Conflict: The algorithm predicts a catastrophic market crash
-    - Rising Action: Dane oversleeps and must rush to an important presentation
-    - Climax: The presentation to executives where he must explain his findings
-    - Tension Point: The questioning of whether his "error" might actually be correct
-
-    Characters:
-    - Dane: The protagonist; a dedicated software engineer who prioritizes work over personal life.
-      Wears grey polo shirts on Thursdays, tends to get lost in his work, and struggles with work-life balance.
-      More comfortable with code than public speaking.
-    - Gary: Dane's nervous boss who seems caught between supporting Dane and managing upper management's expectations
-    - Jonathan Morego: Senior VP of Investor Relations who raises pointed questions about the validity of Dane's predictions
-    - Silence: Brief mention as an Uber driver
-    - C-Level Executives: Present as an audience during the presentation
-
-    World Description:
-    The story takes place in a contemporary corporate setting, likely a financial technology company.
-    The world appears to be our modern one, with familiar elements like:
-    - Major tech companies (Tesla, Google, Apple, Microsoft)
-    - Stock market and financial systems
-    - Modern technology (neural networks, predictive analytics)
-    - Urban environment with rideshare services like Uber
-    - Corporate hierarchy and office culture
-
-    The story creates tension between the familiar corporate world and the potential for an unprecedented
-    financial catastrophe, blending elements of technical thriller with workplace drama. The setting feels
-    grounded in reality but hints at potentially apocalyptic economic consequences.
-    """
-
-    num_chapters = settings.generation.max_chapters
-    # Create agents with genre configuration
-    outline_agents = BookAgents(settings.llm, genre_config=genre_config)
-    print("--- BookAgents (outline) created in main.py ---") # ADD THIS LINE
-    agents = outline_agents.create_agents(initial_prompt, num_chapters)
-    print("--- Agents created in main.py ---") # ADD THIS LINE
-
-    # Generate the outline if not using custom one
-    if not outline:
+        # --- CORRECTED 'else' BLOCK - Outline generation using OutlineGenerator is now INSIDE 'else' ---
+        logger.info("No custom outline provided - generating outline automatically.") # Changed log message
         llm_config = settings.get_llm_config()
-        print("--- llm_config obtained in main.py ---") # ADD THIS LINE
+        print("--- llm_config obtained in main.py ---")
         outline_gen = OutlineGenerator(agents, llm_config)
-        print("--- OutlineGenerator created in main.py ---") # ADD THIS LINE
+        print("--- OutlineGenerator created in main.py ---")
         logger.info("Generating book outline...")
         outline = outline_gen.generate_outline(initial_prompt, num_chapters)
-        print("--- Outline generated (or attempted) in main.py ---") # ADD THIS LINE
+        print("--- Outline generated (or attempted) in main.py ---")
+        if not outline: # Check if outline generation failed
+            logger.error("Failed to generate outline.")
+            return # Exit if outline generation fails
 
     # Create new agents with outline context and genre configuration
     book_agents = BookAgents(settings.llm, outline, genre_config)
@@ -346,14 +292,14 @@ def main():
     if outline:
         for chapter in outline:
             if stop_book_generation:  # Check stop flag at chapter start
-                print("Book generation interrupted by user.")  # Indicate interruption
+                print("Book generation interrupted by user.")
                 break  # Exit chapter loop if stop flag is set
 
             chapter_number = chapter["chapter_number"]
 
             # Verify previous chapter exists and is valid
             if chapter_number > 1:
-                prev_file = os.path.join("book_output", f"chapter_{chapter_number-1:02d}.txt") # Corrected path
+                prev_file = os.path.join("book_output", f"chapter_{chapter_number-1:02d}.txt")
                 if not os.path.exists(prev_file):
                     logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                     break
@@ -368,7 +314,7 @@ def main():
             logger.info(f"Starting Chapter {chapter_number}")
             book_gen.generate_chapter(chapter_number, chapter["prompt"])
 
-            chapter_file = os.path.join(book_gen.output_dir, f"chapter_{chapter_number:02d}.txt") # Corrected path
+            chapter_file = os.path.join(book_gen.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
                 logger.error(f"Failed to generate chapter {chapter_number}")
                 break
