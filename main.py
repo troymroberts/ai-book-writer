@@ -5,6 +5,7 @@ print("--- Debugging main.py: CUSTOM_OUTLINE check ---")  # DEBUGGING LINE
 import os
 import logging
 from logging.config import dictConfig
+import json
 from config import get_settings
 import signal
 import sys
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
+from fixed_outline import fixed_outline_data # ADD THIS LINE - import fixed outline
 
 stop_book_generation = False
 
@@ -108,6 +110,11 @@ def main():
     print(f"--- DEBUG: CUSTOM_OUTLINE env var value: '{custom_outline_path}' (Type: {type(custom_outline_path)}) ---")
 
     outline = None
+    use_fixed_outline = os.getenv('USE_FIXED_OUTLINE', 'False').lower() == 'true' # ADD THIS LINE - check for env var
+
+    if use_fixed_outline: # ADD THIS BLOCK - use fixed outline if env var is set
+        print("--- DEBUG: Using FIXED OUTLINE from fixed_outline.py ---")
+        outline = fixed_outline_data
     if custom_outline_path and os.path.exists(custom_outline_path):
         print("--- DEBUG: Custom outline path condition is TRUE ---")
         logger.info(f"Loading custom outline from: {custom_outline_path}")
@@ -117,7 +124,7 @@ def main():
             return
         logger.info(f"Loaded outline with {len(outline)} chapters")
     else:
-        print("--- DEBUG: Custom outline path condition is FALSE - Generating outline automatically ---")
+        print("--- DEBUG: Custom outline path condition is FALSE - Generating outline automatically with LLM ---") # DEBUG message updated
         logger.info("No custom outline provided - generating outline automatically.")
         llm_config = settings.get_llm_config()
         print("--- llm_config obtained in main.py ---")
