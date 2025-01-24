@@ -5,7 +5,7 @@ from llm.factory import LLMFactory
 from llm.deepseek_client import DeepSeekClient
 from llm.litellm_implementations import OllamaImplementation
 from config import get_config
-import logging  # ADD THIS LINE: Import the logging module
+import logging  # ADDED: Import the logging module
 
 logger = logging.getLogger(__name__)  # Ensure logger is defined if not already
 
@@ -101,6 +101,9 @@ class BookAgents:
     def create_agents(self, initial_prompt, num_chapters) -> Dict:
         """Create and return all agents needed for book generation with specialized roles"""
         outline_context = self._format_outline_context()
+
+        print(f"=== agent_config before agent creation: ===") # ADD THIS LINE
+        print(self.agent_config) # ADD THIS LINE
 
         # Memory Keeper: Maintains story continuity and context
         memory_keeper = autogen.AssistantAgent(
@@ -430,7 +433,12 @@ class BookAgents:
         else:
             model_client_cls = DeepSeekClient  # Default to DeepSeek for other models (or adjust as needed)
 
+        print(f"=== agent_list before registration: ===") # ADD THIS LINE
+        for agent in agent_list: # ADD THIS LOOP
+            print(f"Agent name: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__}") # ADD THIS LINE
+
         for agent in agent_list:
+            print(f"Registering model client for agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__}") # ADD THIS LINE
             agent.register_model_client(model_client_cls=model_client_cls)  # Register dynamically
 
         return {
