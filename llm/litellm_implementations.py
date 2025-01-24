@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
+import litellm # ADD THIS LINE
 from .deepseek_client import DeepSeekClient
 from types import SimpleNamespace
 
