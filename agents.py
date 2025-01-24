@@ -439,7 +439,10 @@ class BookAgents:
 
         for agent in agent_list:
             print(f"Registering model client for agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__}") # ADD THIS LINE
-            agent.register_model_client(model_client_cls=model_client_cls)  # Register dynamically
+            if isinstance(agent, autogen.AssistantAgent): # ADD THIS CHECK
+                agent.register_model_client(model_client_cls=model_client_cls)  # Register dynamically
+            else:
+                print(f"Skipping register_model_client for {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} as it is not an AssistantAgent") # 
 
         return {
             "story_planner": story_planner,
