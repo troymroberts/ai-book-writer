@@ -80,7 +80,7 @@ class OllamaImplementation(LiteLLMBase):
 
     def __init__(self, model: str, api_key: str = None, ollama_base_url: str = None, **kwargs):
         super().__init__(
-            model=f"ollama/{model}",
+            model=f"ollama/{model}", # Keep full ollama model string for internal model tracking
             base_url=ollama_base_url or os.getenv('OLLAMA_BASE_URL', 'http://localhost:11434'),
             api_key=api_key,  # Ollama typically doesn't need an API key for local deployment
             **kwargs
@@ -108,9 +108,9 @@ class OllamaImplementation(LiteLLMBase):
 
     def create(self, params: Dict) -> SimpleNamespace: # Modified create method
         """Adapt generate to return SimpleNamespace for autogen"""
-        model_name = self.model.split('/')[-1] # Extract just the model name
-        response = litellm.completion( # Call litellm.completion directly, passing model_name only
-            model=model_name, # Use model_name only, e.g., "deepseek-r1:14b" # Modified line - use model_name only
+        # model_name_for_litellm = self.model.split('/')[-1].split(':')[0] # No longer needed - use full model string
+        response = litellm.completion( # Call litellm.completion directly, passing FULL model string
+            model=self.model, # Use FULL model string, e.g., "ollama/deepseek-r1:14b" # Modified line - use full model string NOW
             messages=params["messages"],
             base_url=self.base_url,
             provider="ollama" # Explicitly set the provider to ollama
@@ -118,7 +118,7 @@ class OllamaImplementation(LiteLLMBase):
         response_content = response.choices[0].message.content
         result = SimpleNamespace()
         result.choices = [SimpleNamespace(message=SimpleNamespace(content=response_content, role="assistant", function_call=None))]
-        result.model = self.model # or model_name - whichever is appropriate
+        result.model = self.model # Keep full ollama model string for internal tracking
         return result
 
 
