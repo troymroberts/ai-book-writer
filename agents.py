@@ -5,6 +5,7 @@ from llm.factory import LLMFactory
 from llm.deepseek_client import DeepSeekClient
 from llm.litellm_implementations import OllamaImplementation
 from config import get_config
+import logging  # ADD THIS LINE: Import the logging module
 
 logger = logging.getLogger(__name__)  # Ensure logger is defined if not already
 
