@@ -11,27 +11,25 @@ class OutlineGenerator:
        self.agent_config = agent_config
 
    def generate_outline(self, initial_prompt: str, num_chapters: int = 25) -> List[Dict]:
-       """Generate a book outline based on initial prompt"""
        print("\nGenerating outline...")
 
        litellm_messages = [{
            "role": "user",
-           "content": f"""Create a {num_chapters}-chapter outline. For each chapter, use EXACTLY this format:
+           "content": f"""Create a {num_chapters}-chapter outline in English. Follow this EXACT format for each chapter:
 
-Chapter 1: [Title]  
+Chapter [N]: [Title]
 Title: [Same title]
 Key Events:
 - [Event 1]
-- [Event 2] 
+- [Event 2]
 - [Event 3]
 Character Developments: [Details]
 Setting: [Details]
 Tone: [Details]
 
-Repeat for all {num_chapters} chapters.
-
 Initial premise: {initial_prompt}
 
+Repeat EXACTLY this format for all {num_chapters} chapters.
 End with 'END OF OUTLINE'"""
        }]
 
@@ -59,11 +57,9 @@ End with 'END OF OUTLINE'"""
            return self._emergency_outline_processing([], num_chapters)
 
    def _get_sender(self, msg: Dict) -> str:
-       """Helper to get sender from message regardless of format"""
        return msg.get("sender") or msg.get("name", "")
 
    def _extract_outline_content(self, messages: List[Dict]) -> str:
-       """Extract outline content from messages with better error handling"""
        print("Searching for outline content in messages...")
 
        for msg in reversed(messages):
@@ -86,7 +82,6 @@ End with 'END OF OUTLINE'"""
        return ""
 
    def _process_outline_results(self, messages: List[Dict], num_chapters: int) -> List[Dict]:
-       """Extract and process the outline with strict format requirements"""
        outline_content = self._extract_outline_content(messages)
 
        if not outline_content:
@@ -98,14 +93,11 @@ End with 'END OF OUTLINE'"""
 
        for i, section in enumerate(chapter_sections[1:], 1):
            try:
-               title_match = re.search(r'\*?\*?Title:\*?\*?\s*(.+?)(?=\n|$)', section, re.IGNORECASE)
-               events_match = re.search(r'\*?\*?Key Events:\*?\*?\s*(.*?)(?=\*?\*?Character Developments:|$)', section, re.DOTALL | re.IGNORECASE)
-               character_match = re.search(r'\*?\*?Character Developments:\*?\*?\s*(.*?)(?=\*?\*?Setting:|$)', section, re.DOTALL | re.IGNORECASE)
-               setting_match = re.search(r'\*?\*?Setting:\*?\*?\s*(.*?)(?=\*?\*?Tone:|$)', section, re.DOTALL | re.IGNORECASE)
-               tone_match = re.search(r'\*?\*?Tone:\*?\*?\s*(.*?)(?=\*?\*?Chapter \d+:|$)', section, re.DOTALL | re.IGNORECASE)
-
-               if not title_match:
-                   title_match = re.search(r'\*?\*?Chapter \d+:\s*(.+?)(?=\n|$)', section)
+               title_match = re.search(r'Chapter \d+: (.+?)(?=\n|$)', section, re.IGNORECASE)
+               events_match = re.search(r'Key Events:\n-[^\n]*\n-[^\n]*\n-[^\n]*', section, re.DOTALL | re.IGNORECASE)
+               character_match = re.search(r'Character Developments: ([^\n]+)', section, re.IGNORECASE)
+               setting_match = re.search(r'Setting: ([^\n]+)', section, re.IGNORECASE)
+               tone_match = re.search(r'Tone: ([^\n]+?)(?=\n|$)', section, re.IGNORECASE)
 
                if not all([title_match, events_match, character_match, setting_match, tone_match]):
                    print(f"Missing required components in Chapter {i}")
@@ -118,18 +110,21 @@ End with 'END OF OUTLINE'"""
                    print(f"  Missing: {', '.join(missing)}")
                    continue
 
+               events = events_match.group(0).split('\n-')[1:]
+               events = [e.strip() for e in events if e.strip()]
+
                chapter_info = {
                    "chapter_number": i,
                    "title": title_match.group(1).strip(),
                    "prompt": "\n".join([
-                       f"- Key Events: {events_match.group(1).strip()}",
-                       f"- Character Developments: {character_match.group(1).strip()}",
-                       f"- Setting: {setting_match.group(1).strip()}",
-                       f"- Tone: {tone_match.group(1).strip()}"
+                       f"Key Events:",
+                       *[f"- {event}" for event in events],
+                       f"Character Developments: {character_match.group(1).strip()}",
+                       f"Setting: {setting_match.group(1).strip()}",
+                       f"Tone: {tone_match.group(1).strip()}"
                    ])
                }
 
-               events = re.findall(r'-\s*(.+?)(?=\n|$)', events_match.group(1))
                if len(events) < 3:
                    print(f"Chapter {i} has fewer than 3 events")
                    continue
@@ -146,7 +141,6 @@ End with 'END OF OUTLINE'"""
        return chapters
 
    def _verify_chapter_sequence(self, chapters: List[Dict], num_chapters: int) -> List[Dict]:
-       """Verify and fix chapter numbering"""
        chapters.sort(key=lambda x: x['chapter_number'])
 
        for i, chapter in enumerate(chapters, 1):
@@ -164,7 +158,6 @@ End with 'END OF OUTLINE'"""
        return chapters
 
    def _emergency_outline_processing(self, messages: List[Dict], num_chapters: int) -> List[Dict]:
-       """Emergency processing when normal outline extraction fails"""
        print("Attempting emergency outline processing...")
 
        chapters = []
