@@ -3,8 +3,8 @@ import autogen
 from typing import Dict, List
 import re
 import litellm
-from .litellm_base import LiteLLMBase
-from .litellm_implementations import OllamaImplementation
+from llm.litellm_base import LiteLLMBase 
+from llm.litellm_implementations import OllamaImplementation
 
 class OutlineGenerator:
     def __init__(self, agents: Dict[str, autogen.ConversableAgent], agent_config: Dict):
