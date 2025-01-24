@@ -2,6 +2,7 @@
 import autogen
 from typing import Dict, List
 import re
+import litellm # ADD THIS LINE - Import litellm
 
 class OutlineGenerator:
     def __init__(self, agents: Dict[str, autogen.ConversableAgent], agent_config: Dict):
