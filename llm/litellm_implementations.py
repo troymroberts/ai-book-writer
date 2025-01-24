@@ -109,8 +109,8 @@ class OllamaImplementation(LiteLLMBase):
     def create(self, params: Dict) -> SimpleNamespace: # Modified create method
         """Adapt generate to return SimpleNamespace for autogen"""
         model_name = self.model.split('/')[-1] # Extract just the model name
-        response = litellm.completion( # Call litellm.completion directly, passing model name
-            model=model_name,
+        response = litellm.completion( # Call litellm.completion directly, passing model_name only
+            model=model_name, # Use model_name only, e.g., "deepseek-r1:14b" # Modified line - use model_name only
             messages=params["messages"],
             base_url=self.base_url,
             provider="ollama" # Explicitly set the provider to ollama
