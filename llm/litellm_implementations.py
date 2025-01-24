@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
-import litellm # ADD THIS LINE
+import litellm  # Ensure litellm is imported at the top
 from .deepseek_client import DeepSeekClient
 from types import SimpleNamespace
 
@@ -112,7 +112,8 @@ class OllamaImplementation(LiteLLMBase):
         response = litellm.completion( # Call litellm.completion directly, passing model name
             model=model_name,
             messages=params["messages"],
-            base_url=self.base_url
+            base_url=self.base_url,
+            provider="ollama" # Explicitly set the provider to ollama
         )
         response_content = response.choices[0].message.content
         result = SimpleNamespace()
