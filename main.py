@@ -1,5 +1,7 @@
 """Main script for running the book generation system - now with SIGTERM signal handling"""
 #!/usr/bin/env python3
+import autogen # <----- ADD THIS LINE:  Crucial import for AutoGen
+print(f"--- DEBUG: AutoGen version at runtime: {autogen.__version__} ---") # ADD THIS LINE - Debug print for AutoGen version
 print("--- main.py script started ---")
 print("--- Debugging main.py: CUSTOM_OUTLINE check ---")
 import os
