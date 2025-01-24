@@ -303,11 +303,14 @@ def main():
 
         # Save configuration button
         if st.button("Save Configuration"):
+            # Correctly save LLM_MODEL - preserve full ollama/model_name
+            llm_model_value = f"ollama/{selected_model}" if selected_provider_type == "Ollama" else selected_model
+
             env_dict.update({
-                'LLM__MODEL': f"ollama/{selected_model}" if selected_provider_type == "Ollama" else selected_model, # Save ollama model with prefix
-                'LLM__PROVIDER_TYPE': selected_provider_type, # Save provider type
-                'LLM__DEEPSEEK_API_KEY': api_key if selected_provider_type == "DeepSeek" else env_dict.get('LLM__DEEPSEEK_API_KEY', ''), # Conditionally save API keys
-                'OLLAMA_BASE_URL': ollama_base_url if selected_provider_type == "Ollama" else env_dict.get('OLLAMA_BASE_URL', 'http://localhost:11434'), # Save Ollama base URL
+                'LLM__MODEL': llm_model_value,
+                'LLM__PROVIDER_TYPE': selected_provider_type,
+                'LLM__DEEPSEEK_API_KEY': api_key if selected_provider_type == "DeepSeek" else env_dict.get('LLM__DEEPSEEK_API_KEY', ''),
+                'OLLAMA_BASE_URL': ollama_base_url if selected_provider_type == "Ollama" else env_dict.get('OLLAMA_BASE_URL', 'http://localhost:11434'),
                 'BOOK_GENRE': f'genre/{selected_genre}',
                 'BOOK_TITLE': book_title,
                 'BOOK_AUTHOR': book_author,
