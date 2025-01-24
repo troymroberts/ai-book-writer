@@ -44,7 +44,6 @@ print("--- Logging configuration loaded in main.py ---") # ADD THIS LINE
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
-# REMOVE THIS LINE: from llm.deepseek_client import DeepSeekClient  <- REMOVE THIS LINE
 
 # Global flag to signal stop generation
 stop_book_generation = False
@@ -58,12 +57,6 @@ def signal_handler(sig, frame):
 
 # Register signal handler
 signal.signal(signal.SIGTERM, signal_handler)
-
-# REMOVE THESE LINES:
-# Initialize DeepSeek client with configuration  <- REMOVE THIS LINE
-# settings = get_settings()  <- REMOVE THIS LINE
-# llm_config = settings.get_llm_config()  <- REMOVE THIS LINE
-# deepseek_client = DeepSeekClient(config=llm_config)  <- REMOVE THIS LINE
 
 def load_custom_outline(outline_path):
     """Load a custom outline from file"""
@@ -224,8 +217,9 @@ def main():
     # Check all required keys
     missing_keys = []
     for model_type, key_name in key_requirements.items():
-        if model_type in model_lower and not getattr(settings.llm, key_name, None):
-            missing_keys.append(key_name)
+        if model_type in model_lower and not model_lower.startswith("ollama/"): # Exclude ollama models from API key check
+            if not getattr(settings.llm, key_name, None):
+                missing_keys.append(key_name)
 
     if missing_keys:
         logger.error("The following API keys are required but not provided:")
