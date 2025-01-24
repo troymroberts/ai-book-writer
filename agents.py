@@ -6,6 +6,8 @@ from llm.deepseek_client import DeepSeekClient
 from llm.litellm_implementations import OllamaImplementation
 from config import get_config
 
+logger = logging.getLogger(__name__)  # Ensure logger is defined if not already
+
 class BookAgents:
     def __init__(self, agent_config: Dict, outline: Optional[List[Dict]] = None, genre_config: Optional[Dict] = None):
         """Initialize agents with book outline context and genre configuration"""
@@ -22,27 +24,26 @@ class BookAgents:
             config = config.dict()
         llm_config = get_config()
 
-        config_list = [] # Initialize as empty list
+        config_list = []  # Initialize as empty list
 
-        model_lower = llm_config.get("model", "").lower() # Get model and lowercase it
+        model_lower = llm_config.get("model", "").lower()  # Get model and lowercase it
 
-        if "ollama" in model_lower: # Check if Ollama model is selected
+        if "ollama" in model_lower:  # Check if Ollama model is selected
             config_list.append({
-                "model": llm_config.get("model"), # Use model from config (e.g., ollama/deepseek-r1:14b)
-                "base_url": llm_config.get("base_url"), # Use base_url from config
-                "api_key": llm_config.get("api_key"), # Pass API key even if it's None/empty for Ollama (LiteLLM might need it, though Ollama usually doesn't)
-                "model_client_cls": "OllamaImplementation", # Use Ollama implementation
+                "model": llm_config.get("model"),  # Use model from config (e.g., ollama/deepseek-r1:14b)
+                "base_url": llm_config.get("base_url"),  # Use base_url from config
+                "api_key": llm_config.get("api_key"),  # Pass API key even if it's None/empty for Ollama (LiteLLM might need it, though Ollama usually doesn't)
+                "model_client_cls": "OllamaImplementation",  # Use Ollama implementation
                 "model_kwargs": {}
             })
-        else: # Default to DeepSeek if not Ollama (or handle other models here in future)
+        else:  # Default to DeepSeek if not Ollama (or handle other models here in future)
             config_list.append({
-                "model": "deepseek-chat", # Default to deepseek-chat if not Ollama
+                "model": "deepseek-chat",  # Default to deepseek-chat if not Ollama
                 "api_key": llm_config.get("api_key"),
                 "base_url": llm_config.get("base_url"),
                 "model_client_cls": "DeepSeekClient",
                 "model_kwargs": {}
             })
-
 
         return {
             **config,
@@ -259,7 +260,6 @@ class BookAgents:
             logger.error("Failed to create setting_builder agent.")
             return None
 
-
         # Character Agent: Develops and maintains character details (New Agent)
         character_agent = autogen.AssistantAgent(
             name="character_agent",
@@ -334,6 +334,33 @@ class BookAgents:
             return None
 
         # Writer: Generates the actual prose
+        writer_message = f"""You are an expert creative writer who brings scenes to life with vivid prose, compelling characters, and engaging plots.
+
+        Book Context:
+        {outline_context}
+
+        Established World Elements:
+        {self.get_world_context()}
+
+        Character Development History:
+        {self.get_character_context()}
+
+        Your focus for each chapter:
+            1. Write according to the detailed chapter outline, incorporating all Key Events, Character Developments, Setting, and Tone.
+            2. Maintain consistent character voices and personalities as defined by the Character Agent.
+            3. Vividly incorporate world-building details and settings as established by the Setting Builder.
+            4. Create engaging and immersive prose that captures the intended tone and style for the genre and chapter.
+            5. Ensure each chapter is a complete and satisfying scene with a clear beginning, middle, and end - do not leave scenes incomplete or abruptly cut off.
+            6. Each chapter MUST be at least 5000 words (approximately 30,000 characters). Consider this a hard requirement. If your output is shorter, continue writing until you reach this minimum length.
+            7. Ensure smooth and logical transitions between paragraphs and scenes within the chapter.
+            8. Add rich sensory details and descriptions of the environment and characters where appropriate to enhance immersion and engagement.
+
+        Always reference the chapter outline, previous chapter content (as summarized by the Memory Keeper), established world elements, and character developments to ensure consistency and coherence.
+
+        Mark initial drafts with 'SCENE DRAFT:' and final, revised versions with 'SCENE FINAL:'.
+
+        {self._get_genre_style_instructions()}"""
+
         writer = autogen.AssistantAgent(
             name="writer",
             system_message=writer_message,
@@ -383,33 +410,33 @@ class BookAgents:
         user_proxy = autogen.UserProxyAgent(
             name="user_proxy",
             human_input_mode="TERMINATE",
-            code_execution_config=False, # Removed code execution capability
-            max_consecutive_auto_reply=10 # Increased auto-reply limit if needed
+            code_execution_config=False,  # Removed code execution capability
+            max_consecutive_auto_reply=10  # Increased auto-reply limit if needed
         )
         if user_proxy is None:
             logger.error("Failed to create user_proxy agent.")
             return None
 
-        agent_list = [memory_keeper, story_planner, outline_creator, setting_builder, character_agent, plot_agent, writer, editor, user_proxy] # List of agents
+        agent_list = [memory_keeper, story_planner, outline_creator, setting_builder, character_agent, plot_agent, writer, editor, user_proxy]  # List of agents
 
-        llm_config = get_config() # Get config again to access model info
+        llm_config = get_config()  # Get config again to access model info
 
-        model_lower = llm_config.get("model", "").lower() # Get model name again
+        model_lower = llm_config.get("model", "").lower()  # Get model name again
 
         # Dynamically register model client based on LLM_MODEL
         if "ollama" in model_lower:
-            model_client_cls = OllamaImplementation # Use Ollama client for Ollama models
+            model_client_cls = OllamaImplementation  # Use Ollama client for Ollama models
         else:
-            model_client_cls = DeepSeekClient # Default to DeepSeek for other models (or adjust as needed)
+            model_client_cls = DeepSeekClient  # Default to DeepSeek for other models (or adjust as needed)
 
         for agent in agent_list:
-            agent.register_model_client(model_client_cls=model_client_cls) # Register dynamically
+            agent.register_model_client(model_client_cls=model_client_cls)  # Register dynamically
 
         return {
             "story_planner": story_planner,
-            "setting_builder": setting_builder, # Renamed and using setting_builder now
-            "character_agent": character_agent, # Added character_agent
-            "plot_agent": plot_agent, # Added plot_agent
+            "setting_builder": setting_builder,  # Renamed and using setting_builder now
+            "character_agent": character_agent,  # Added character_agent
+            "plot_agent": plot_agent,  # Added plot_agent
             "memory_keeper": memory_keeper,
             "writer": writer,
             "editor": editor,
