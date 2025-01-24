@@ -358,17 +358,22 @@ def main():
                 # Prepare and start book generation process
                 progress_bar = st.progress(0)
                 status_text_area = st.empty()
-                print("Before subprocess.Popen") # ADD THIS LINE
+                print("Before subprocess.Popen (direct main.py)") # Updated print message
                 st.session_state.process = subprocess.Popen(
-                    ["./quickstart.sh"], # Or "./quickstart.sh" if you prefer using the script
+                    ["./venv/bin/python", "main.py"],  # Run main.py directly
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     universal_newlines=True,
-                    env=os.environ.copy(), # Inherit current env vars
-                    preexec_fn=os.setsid, # Allow graceful termination
-                    cwd=os.getcwd() # Set current working directory
+                    env={**os.environ.copy(),  # Inherit existing env vars and add/override:
+                         "LLM__MODEL": env_dict.get('LLM__MODEL'), # Pass LLM_MODEL
+                         "BOOK_GENRE": env_dict.get('BOOK_GENRE'), # Pass BOOK_GENRE
+                         "OLLAMA_BASE_URL": env_dict.get('OLLAMA_BASE_URL', 'http://localhost:11434'), # Pass Ollama URL
+                         "CUSTOM_OUTLINE": os.environ.get('CUSTOM_OUTLINE', '') # Pass CUSTOM_OUTLINE if set, otherwise empty
+                         },
+                    preexec_fn=os.setsid,
+                    cwd=os.getcwd()
                 )
-                print("After subprocess.Popen") # ADD THIS LINE
+                print("After subprocess.Popen (direct main.py)") # Updated print message
                 st.session_state.generation_status = "Generating Book Content"
                 print("--- End Generate Book Button Clicked ---\n") # ADD THIS LINE
 
