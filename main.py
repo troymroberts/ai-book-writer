@@ -1,8 +1,10 @@
 """Main script for running the book generation system - now with SIGTERM signal handling"""
+#!/usr/bin/env python3
 print("--- main.py script started ---")  # ADD THIS LINE
 print("--- Initializing main.py logging ---") # ADD THIS LINE
-import litellm   # Keep verbose logging enabled
-litellm.set_verbose = True
+import litellm   # ADD THIS LINE
+litellm.set_verbose = True  # ADD THIS LINE
+print("--- litellm.set_verbose = True executed ---") # ADD THIS LINE
 import os
 import logging
 from logging.config import dictConfig
@@ -38,6 +40,7 @@ logging_config = {
 
 dictConfig(logging_config)
 logger = logging.getLogger(__name__)
+print("--- Logging configuration loaded in main.py ---") # ADD THIS LINE
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
@@ -187,18 +190,20 @@ def display_startup_info(genre_config, outline):
     input("\nPress Enter to start book generation...")
 
 def main():
-    """Main function to run book generation - now with stop signal handling"""
+    print("--- main() function in main.py started ---") # ADD THIS LINE
     global stop_book_generation  # Use the global flag
 
     # Check if genre is selected
     genre = os.getenv('BOOK_GENRE')
+    print(f"--- BOOK_GENRE env var in main.py: {genre} ---") # ADD THIS LINE
     if not genre:
         print("No genre selected. Please run './select_genre.py' first to choose a genre.")
         print("Example: ./select_genre.py")
         return
 
     # Get base configuration
-    settings = get_settings()
+    settings = get_settings() # Keep this line as is
+    print("--- Settings object created in main.py ---") # ADD THIS LINE
 
     # Validate API keys based on model requirements
     model_lower = settings.llm.model.lower()
@@ -296,14 +301,19 @@ def main():
     num_chapters = settings.generation.max_chapters
     # Create agents with genre configuration
     outline_agents = BookAgents(settings.llm, genre_config=genre_config)
+    print("--- BookAgents (outline) created in main.py ---") # ADD THIS LINE
     agents = outline_agents.create_agents(initial_prompt, num_chapters)
+    print("--- Agents created in main.py ---") # ADD THIS LINE
 
     # Generate the outline if not using custom one
     if not outline:
         llm_config = settings.get_llm_config()
+        print("--- llm_config obtained in main.py ---") # ADD THIS LINE
         outline_gen = OutlineGenerator(agents, llm_config)
+        print("--- OutlineGenerator created in main.py ---") # ADD THIS LINE
         logger.info("Generating book outline...")
         outline = outline_gen.generate_outline(initial_prompt, num_chapters)
+        print("--- Outline generated (or attempted) in main.py ---") # ADD THIS LINE
 
     # Create new agents with outline context and genre configuration
     book_agents = BookAgents(settings.llm, outline, genre_config)
@@ -348,22 +358,21 @@ def main():
 
             # Verify previous chapter exists and is valid
             if chapter_number > 1:
-                prev_file = os.path.join(book_output", f"chapter_{chapter_number - 1:02d}.txt") # Corrected path
+                prev_file = os.path.join("book_output", f"chapter_{chapter_number - 1:02d}.txt") # Corrected path
                 if not os.path.exists(prev_file):
-                    logger.error(f"Previous chapter {chapter_number - 1} not found. Stopping.")
+                    logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                     break
 
                 with open(prev_file, 'r', encoding='utf-8') as f:
                     content = f.read()
-                    if not book_gen._verify_chapter_content(content, chapter_number - 1):
-                        logger.error(f"Previous chapter {chapter_number - 1} content invalid. Stopping.")
+                    if not book_gen._verify_chapter_content(content, chapter_number-1):
+                        logger.error(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
                         break
 
             # Generate current chapter
             logger.info(f"Starting Chapter {chapter_number}")
             book_gen.generate_chapter(chapter_number, chapter["prompt"])
 
-            # Verify current chapter
             chapter_file = os.path.join(book_gen.output_dir, f"chapter_{chapter_number:02d}.txt") # Corrected path
             if not os.path.exists(chapter_file):
                 logger.error(f"Failed to generate chapter {chapter_number}")
