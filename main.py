@@ -8,6 +8,7 @@ from logging.config import dictConfig
 from config import get_settings
 import signal
 import sys
+print(f"Python sys.path: {sys.path}") # Print Python path for debugging
 
 # Configure logging (simplified for brevity)
 logging.basicConfig(level=logging.INFO)
