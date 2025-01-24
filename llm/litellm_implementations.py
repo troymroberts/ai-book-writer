@@ -1,3 +1,4 @@
+--- START OF FILE llm/litellm_implementations.py ---
 from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
@@ -105,12 +106,18 @@ class OllamaImplementation(LiteLLMBase):
             **kwargs
         )
 
-    def create(self, params: Dict) -> SimpleNamespace: # ADD THIS CREATE METHOD
+    def create(self, params: Dict) -> SimpleNamespace: # Modified create method
         """Adapt generate to return SimpleNamespace for autogen"""
-        response_content = self.generate(prompt=params["messages"][0]["content"]) # Assuming single message prompt
+        model_name = self.model.split('/')[-1] # Extract just the model name
+        response = litellm.completion( # Call litellm.completion directly, passing model name
+            model=model_name,
+            messages=params["messages"],
+            base_url=self.base_url
+        )
+        response_content = response.choices[0].message.content
         result = SimpleNamespace()
-        result.choices = [SimpleNamespace(message=SimpleNamespace(content=response_content, role="assistant", function_call=None))] # Adjusted to match autogen expected format
-        result.model = self.model # or "ollama" - whichever is appropriate
+        result.choices = [SimpleNamespace(message=SimpleNamespace(content=response_content, role="assistant", function_call=None))]
+        result.model = self.model # or model_name - whichever is appropriate
         return result
 
 
