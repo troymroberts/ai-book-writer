@@ -8,7 +8,7 @@ os.environ['BOOK_GENRE'] = "genre/literary_fiction"  # Set environment variable 
 
 def get_config() -> Dict[str, Any]:
     """Get the complete configuration including model settings
-    
+
     Returns:
         Dict[str, Any]: Configuration dictionary compatible with autogen
     """

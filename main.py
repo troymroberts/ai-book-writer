@@ -101,6 +101,15 @@ def main():
     # Create agents with genre configuration (BookAgents now expects outline=None initially)
     outline_agents = BookAgents(settings.llm, None, genre_config)  # Pass outline=None initially
     print("--- BookAgents (outline) created in main.py ---")
+
+    # --- DEBUGGING PRINTS - ADDED HERE ---
+    print("--- DEBUG: LLM Config BEFORE agent creation ---")
+    llm_config_for_agents = settings.get_llm_config() # Get LLM config dict
+    print(f"--- DEBUG: llm_config from settings.get_llm_config(): {llm_config_for_agents}") # Print the config dict
+    print(f"--- DEBUG: settings.llm: {settings.llm}") # Print the settings.llm object itself
+    print("--- DEBUG: End LLM Config ---")
+    # --- END DEBUGGING PRINTS ---
+
     agents = outline_agents.create_agents(initial_prompt, num_chapters)
     print("--- Agents created in main.py ---")
     # --- END MOVED SECTION ---

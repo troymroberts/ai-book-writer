@@ -129,8 +129,8 @@ class LLMSettings(BaseSettings):
             config["api_key"] = self.groq_api_key.get_secret_value()
         elif "mistral" in self.model and self.mistral_nemo_base_url:
             config["base_url"] = str(self.mistral_nemo_base_url)
-        elif "ollama" in self.model and self.ollama_base_url:
-             config["base_url"] = str(self.ollama_base_url)
+        elif "ollama" in self.model and self.ollama_base_url: # Added Ollama base_url config
+             config["base_url"] = str(self.llm.ollama_base_url)
 
 
         return config

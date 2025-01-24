@@ -4,9 +4,9 @@ litellm.set_verbose = True # Enable verbose logging for this test script
 
 try:
     response = litellm.completion(
-        model="ollama/deepseek-r1:14b", # Use the correct Ollama model string
+        model="ollama/deepseek-r1:14b",
         messages=[{"content": "Write a short test sentence.", "role": "user"}],
-        base_url="http://localhost:11434" # Or your Ollama base URL if different
+        base_url="http://localhost:11434"  # <--- Corrected base_url (no /api/v1/...)
     )
     print("\n--- Successful Response from Ollama ---")
     print(response)
