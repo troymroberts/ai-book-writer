@@ -37,6 +37,8 @@ class BookAgents:
                 "model_client_cls": "OllamaImplementation",  # Use Ollama implementation
                 "model_kwargs": {}
             })
+            OllamaImplementation.register_model(llm_config.get("model")) # <-- ADD THIS LINE: Register OllamaImplementation for the model
+            model_client_cls = OllamaImplementation # Redundant, but keep for clarity
         else:  # Default to DeepSeek if not Ollama (or handle other models here in future)
             config_list.append({
                 "model": "deepseek-chat",  # Default to deepseek-chat if not Ollama
@@ -198,7 +200,7 @@ class BookAgents:
             6. Key Events should be action-oriented and drive the plot forward.
             7. Character Developments should show clear progression or change in characters.
             8. Setting descriptions should be vivid and contribute to the chapter's atmosphere.
-            9. Tone should be clearly defined and set the emotional and narrative mood for the chapter.
+            9. Tone should be clearly defined and set the emotional and narrative mood for this chapter.
 
             Initial Premise:
             {initial_prompt}

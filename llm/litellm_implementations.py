@@ -4,6 +4,7 @@ from .litellm_base import LiteLLMBase
 import litellm  # Ensure litellm is imported at the top
 from .deepseek_client import DeepSeekClient
 from types import SimpleNamespace
+import autogen
 
 class OpenAIImplementation(LiteLLMBase):
     """Implementation for OpenAI models"""
@@ -77,6 +78,15 @@ class GroqImplementation(LiteLLMBase):
 
 class OllamaImplementation(LiteLLMBase):
     """Implementation for Ollama models"""
+
+    @classmethod
+    def register_model(cls, model_name: str): # Pass in model_name to register for
+        """Register this client class with autogen's configuration system"""
+        autogen.oai.ChatCompletion.register_model( # Use autogen.oai, not just oai
+            model_name, # Register for the specific model name (e.g., "ollama/llama2")
+            cls,
+            is_chat_model=True
+        )
 
     def __init__(self, model: str, api_key: str = None, ollama_base_url: str = None, **kwargs):
         super().__init__(
