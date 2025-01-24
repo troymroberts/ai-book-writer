@@ -12,54 +12,25 @@ from config import get_settings
 import signal
 import sys
 
-# Configure logging
-logging_config = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            'datefmt': '%Y-%m-%d %H:%M:%S'
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard'
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True
-        }
-    }
-}
-
-dictConfig(logging_config)
+# Configure logging (simplified for brevity in this debug version - you can keep your full logging config if you prefer)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-print("--- Logging configuration loaded in main.py ---")
+
 from agents import BookAgents
 from book_generator import BookGenerator
 from outline_generator import OutlineGenerator
 
-# Global flag to signal stop generation
 stop_book_generation = False
 
 def signal_handler(sig, frame):
-    """Signal handler to catch SIGTERM and set stop flag"""
     global stop_book_generation
     print("\nStopping book generation process...")
     stop_book_generation = True
     sys.exit(0)
 
-# Register signal handler
 signal.signal(signal.SIGTERM, signal_handler)
 
 def load_custom_outline(outline_path):
-    """Load a custom outline from file"""
     try:
         with open(outline_path, "r") as f:
             content = f.read()
@@ -234,8 +205,11 @@ def main():
 
     # Check if using custom outline
     custom_outline_path = os.getenv('CUSTOM_OUTLINE')
+    print(f"--- DEBUG: CUSTOM_OUTLINE environment variable value: '{custom_outline_path}' (Type: {type(custom_outline_path)}) ---") # DEBUGGING LINE
+
     outline = None
     if custom_outline_path and os.path.exists(custom_outline_path):
+        print("--- DEBUG: Condition 'custom_outline_path and os.path.exists(custom_outline_path)' is TRUE ---") # DEBUGGING LINE
         logger.info(f"Loading custom outline from: {custom_outline_path}")
         outline = load_custom_outline(custom_outline_path)
         if not outline:
@@ -243,8 +217,9 @@ def main():
             return
         logger.info(f"Successfully loaded outline with {len(outline)} chapters")
     else:
-        # --- CORRECTED 'else' BLOCK - Outline generation using OutlineGenerator is now INSIDE 'else' ---
-        logger.info("No custom outline provided - generating outline automatically.") # Changed log message
+        print("--- DEBUG: Condition 'custom_outline_path and os.path.exists(custom_outline_path)' is FALSE - Should generate outline ---") # DEBUGGING LINE
+        logger.error(f"Custom outline not found at: {custom_outline_path}") # Keep this error log for now - but it should now be INFO level in normal operation
+        # --- Outline generation code ---
         llm_config = settings.get_llm_config()
         print("--- llm_config obtained in main.py ---")
         outline_gen = OutlineGenerator(agents, llm_config)
@@ -252,12 +227,12 @@ def main():
         logger.info("Generating book outline...")
         outline = outline_gen.generate_outline(initial_prompt, num_chapters)
         print("--- Outline generated (or attempted) in main.py ---")
-        if not outline: # Check if outline generation failed
+        if not outline:
             logger.error("Failed to generate outline.")
-            return # Exit if outline generation fails
+            return
 
-    # Create new agents with outline context and genre configuration
-    book_agents = BookAgents(settings.llm, outline, genre_config)
+    # Create agents with genre configuration (BookAgents now expects outline even if it's generated later)
+    book_agents = BookAgents(settings.llm, outline, genre_config) # Pass outline here
     agents_with_context = book_agents.create_agents(initial_prompt, num_chapters)
 
     # Log genre configuration if available
@@ -274,59 +249,60 @@ def main():
 
     # Log the generated outline
     logger.info("Generated Outline:")
-    for chapter in outline:
-        logger.info("\nChapter %d: %s", chapter['chapter_number'], chapter['title'])
-        logger.info("-" * 50)
-        logger.info(chapter['prompt'])
-
-    # Save the outline for reference
-    logger.info("Saving outline to file...")
-    with open("book_output/outline.txt", "w") as f:
+    if outline: # Check if outline is not None before proceeding
         for chapter in outline:
-            f.write(f"\nChapter {chapter['chapter_number']}: {chapter['title']}\n")
-            f.write("-" * 50 + "\n")
-            f.write(chapter['prompt'] + "\n")
+            logger.info("\nChapter %d: %s", chapter['chapter_number'], chapter['title'])
+            logger.info("-" * 50)
+            logger.info(chapter['prompt'])
 
-    # Generate the book using the outline - with stop signal check in loop
-    logger.info("Generating book chapters...")
-    if outline:
-        for chapter in outline:
-            if stop_book_generation:  # Check stop flag at chapter start
-                print("Book generation interrupted by user.")
-                break  # Exit chapter loop if stop flag is set
+        # Save the outline for reference
+        logger.info("Saving outline to file...")
+        with open("book_output/outline.txt", "w") as f:
+            for chapter in outline:
+                f.write(f"\nChapter {chapter['chapter_number']}: {chapter['title']}\n")
+                f.write("-" * 50 + "\n")
+                f.write(chapter['prompt'] + "\n")
 
-            chapter_number = chapter["chapter_number"]
+        # Generate the book using the outline - with stop signal check in loop
+        logger.info("Generating book chapters...")
+        if outline: # Re-check outline before chapter generation loop
+            for chapter in outline:
+                if stop_book_generation:  # Check stop flag at chapter start
+                    print("Book generation interrupted by user.")
+                    break  # Exit chapter loop if stop flag is set
 
-            # Verify previous chapter exists and is valid
-            if chapter_number > 1:
-                prev_file = os.path.join("book_output", f"chapter_{chapter_number-1:02d}.txt")
-                if not os.path.exists(prev_file):
-                    logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
-                    break
+                chapter_number = chapter["chapter_number"]
 
-                with open(prev_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    if not book_gen._verify_chapter_content(content, chapter_number-1):
-                        logger.error(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
+                # Verify previous chapter exists and is valid
+                if chapter_number > 1:
+                    prev_file = os.path.join("book_output", f"chapter_{chapter_number-1:02d}.txt")
+                    if not os.path.exists(prev_file):
+                        logger.error(f"Previous chapter {chapter_number-1} not found. Stopping.")
                         break
 
-            # Generate current chapter
-            logger.info(f"Starting Chapter {chapter_number}")
-            book_gen.generate_chapter(chapter_number, chapter["prompt"])
+                    with open(prev_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        if not book_gen._verify_chapter_content(content, chapter_number-1):
+                            logger.error(f"Previous chapter {chapter_number-1} content invalid. Stopping.")
+                            break
 
-            chapter_file = os.path.join(book_gen.output_dir, f"chapter_{chapter_number:02d}.txt")
-            if not os.path.exists(chapter_file):
-                logger.error(f"Failed to generate chapter {chapter_number}")
-                break
+                # Generate current chapter
+                logger.info(f"Starting Chapter {chapter_number}")
+                book_gen.generate_chapter(chapter_number, chapter["prompt"])
 
-            with open(chapter_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-                if not book_gen._verify_chapter_content(content, chapter_number):
-                    logger.error(f"Chapter {chapter_number} content invalid")
+                chapter_file = os.path.join(book_gen.output_dir, f"chapter_{chapter_number:02d}.txt")
+                if not os.path.exists(chapter_file):
+                    logger.error(f"Failed to generate chapter {chapter_number}")
                     break
 
-            logger.info(f"Chapter {chapter_number} complete")
-            time.sleep(5)
+                with open(chapter_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    if not book_gen._verify_chapter_content(content, chapter_number):
+                        logger.error(f"Chapter {chapter_number} content invalid")
+                        break
+
+                logger.info(f"Chapter {chapter_number} complete")
+                time.sleep(5)
     else:
         logger.error("No outline was generated - cannot generate book")
 
