@@ -1,7 +1,9 @@
-from typing import Optional, Dict, Any
+--- START OF FILE llm/litellm_implementations.py ---
+from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
 from .deepseek_client import DeepSeekClient
+from types import SimpleNamespace
 
 class OpenAIImplementation(LiteLLMBase):
     """Implementation for OpenAI models"""
@@ -103,6 +105,15 @@ class OllamaImplementation(LiteLLMBase):
             max_tokens=max_tokens,
             **kwargs
         )
+
+    def create(self, params: Dict) -> SimpleNamespace: # ADD THIS CREATE METHOD
+        """Adapt generate to return SimpleNamespace for autogen"""
+        response_content = self.generate(prompt=params["messages"][0]["content"]) # Assuming single message prompt
+        result = SimpleNamespace()
+        result.choices = [SimpleNamespace(message=SimpleNamespace(content=response_content, role="assistant", function_call=None))] # Adjusted to match autogen expected format
+        result.model = self.model # or "ollama" - whichever is appropriate
+        return result
+
 
 class O1PreviewImplementation(LiteLLMBase):
     """Implementation for O1-Preview models"""
