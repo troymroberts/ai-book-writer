@@ -15,21 +15,22 @@ class OutlineGenerator:
        print("\nGenerating outline...")
 
        litellm_messages = [{
-           "role": "user", 
-           "content": f"""Create a {num_chapters}-chapter outline:
+           "role": "user",
+           "content": f"""Create a {num_chapters}-chapter outline. For each chapter, use EXACTLY this format:
 
-{initial_prompt}
-
-Output format for each chapter:
-Chapter N: [Title]
+Chapter 1: [Title]  
 Title: [Same title]
 Key Events:
 - [Event 1]
-- [Event 2]
+- [Event 2] 
 - [Event 3]
-Character Developments: [Development details]
-Setting: [Setting details]
-Tone: [Tone details]
+Character Developments: [Details]
+Setting: [Details]
+Tone: [Details]
+
+Repeat for all {num_chapters} chapters.
+
+Initial premise: {initial_prompt}
 
 End with 'END OF OUTLINE'"""
        }]
@@ -38,12 +39,19 @@ End with 'END OF OUTLINE'"""
            response = litellm.completion(
                model="ollama/deepseek-r1:14b",
                messages=litellm_messages,
-               base_url="http://localhost:11434"
+               base_url="http://localhost:11434",
+               stream=True
            )
            
-           print(f"LLM Response: {response.choices[0].message.content}")  # Add here
-           
-           outline_content = response.choices[0].message.content
+           content = ""
+           print("\nGenerating outline (streaming):")
+           for chunk in response:
+               if chunk.choices[0].delta.content:
+                   content_chunk = chunk.choices[0].delta.content
+                   print(content_chunk, end='', flush=True)
+                   content += content_chunk
+               
+           outline_content = content
            return self._process_outline_results([{"content": outline_content}], num_chapters)
 
        except Exception as e:
