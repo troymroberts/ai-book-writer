@@ -124,6 +124,9 @@ class BookAgents:
             """,
             llm_config=self.agent_config,
         )
+        if memory_keeper is None:
+            logger.error("Failed to create memory_keeper agent.")
+            return None
 
         # Story Planner - Focuses on high-level story structure
         story_planner = autogen.AssistantAgent(
@@ -158,6 +161,10 @@ class BookAgents:
             Always provide specific, detailed content - never use placeholders. Focus on actionable feedback to improve story structure and pacing.""",
             llm_config=self.agent_config,
         )
+        if story_planner is None:
+            logger.error("Failed to create story_planner agent.")
+            return None
+
 
         # Outline Creator - Creates detailed chapter outlines
         outline_creator = autogen.AssistantAgent(
@@ -204,6 +211,9 @@ class BookAgents:
             """,
             llm_config=self.agent_config,
         )
+        if outline_creator is None:
+            logger.error("Failed to create outline_creator agent.")
+            return None
 
         # Setting Builder: Creates and maintains the story setting (Renamed and enhanced World Builder)
         setting_builder = autogen.AssistantAgent(
@@ -245,6 +255,9 @@ class BookAgents:
             """,
             llm_config=self.agent_config,
         )
+        if setting_builder is None:
+            logger.error("Failed to create setting_builder agent.")
+            return None
 
 
         # Character Agent: Develops and maintains character details (New Agent)
@@ -281,6 +294,9 @@ class BookAgents:
             """,
             llm_config=self.agent_config,
         )
+        if character_agent is None:
+            logger.error("Failed to create character_agent agent.")
+            return None
 
         # Plot Agent: Focuses on plot details and pacing within chapters (New Agent)
         plot_agent = autogen.AssistantAgent(
@@ -313,42 +329,19 @@ class BookAgents:
             """,
             llm_config=self.agent_config,
         )
-
+        if plot_agent is None:
+            logger.error("Failed to create plot_agent agent.")
+            return None
 
         # Writer: Generates the actual prose
-        writer_message = f"""You are an expert creative writer who brings scenes to life with vivid prose, compelling characters, and engaging plots.
-
-        Book Context:
-        {outline_context}
-
-        Established World Elements:
-        {self.get_world_context()}
-
-        Character Development History:
-        {self.get_character_context()}
-
-        Your focus for each chapter:
-            1. Write according to the detailed chapter outline, incorporating all Key Events, Character Developments, Setting, and Tone.
-            2. Maintain consistent character voices and personalities as defined by the Character Agent.
-            3. Vividly incorporate world-building details and settings as established by the Setting Builder.
-            4. Create engaging and immersive prose that captures the intended tone and style for the genre and chapter.
-            5. Ensure each chapter is a complete and satisfying scene with a clear beginning, middle, and end - do not leave scenes incomplete or abruptly cut off.
-            6. Each chapter MUST be at least 5000 words (approximately 30,000 characters). Consider this a hard requirement. If your output is shorter, continue writing until you reach this minimum length.
-            7. Ensure smooth and logical transitions between paragraphs and scenes within the chapter.
-            8. Add rich sensory details and descriptions of the environment and characters where appropriate to enhance immersion and engagement.
-
-        Always reference the chapter outline, previous chapter content (as summarized by the Memory Keeper), established world elements, and character developments to ensure consistency and coherence.
-
-        Mark initial drafts with 'SCENE DRAFT:' and final, revised versions with 'SCENE FINAL:'.
-
-        {self._get_genre_style_instructions()}"""
-
-
         writer = autogen.AssistantAgent(
             name="writer",
             system_message=writer_message,
             llm_config=self.agent_config,
         )
+        if writer is None:
+            logger.error("Failed to create writer agent.")
+            return None
 
         # Editor: Reviews and improves content
         editor = autogen.AssistantAgent(
@@ -382,6 +375,9 @@ class BookAgents:
             Reference specific outline elements, style guidelines, and previous chapter feedback in your critiques and suggestions. Do not proceed to the next chapter until the current chapter is finalized and meets all quality and length requirements. Never ask to start the next chapter, as the next step is finalizing the current chapter.""",
             llm_config=self.agent_config,
         )
+        if editor is None:
+            logger.error("Failed to create editor agent.")
+            return None
 
         # User Proxy: Manages the interaction
         user_proxy = autogen.UserProxyAgent(
@@ -390,6 +386,9 @@ class BookAgents:
             code_execution_config=False, # Removed code execution capability
             max_consecutive_auto_reply=10 # Increased auto-reply limit if needed
         )
+        if user_proxy is None:
+            logger.error("Failed to create user_proxy agent.")
+            return None
 
         agent_list = [memory_keeper, story_planner, outline_creator, setting_builder, character_agent, plot_agent, writer, editor, user_proxy] # List of agents
 
