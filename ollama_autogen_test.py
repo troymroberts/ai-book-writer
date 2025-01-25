@@ -1,4 +1,10 @@
 # ollama_autogen_test.py - WITH REGISTER_MODEL() CALL
+import sys
+import os
+
+print(f"Python interpreter path: {sys.executable}") # ADD THIS
+print(f"Current working directory: {os.getcwd()}") # ADD THIS
+
 import autogen
 import logging
 
