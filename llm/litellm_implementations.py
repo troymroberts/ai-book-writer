@@ -82,6 +82,9 @@ class OllamaImplementation(LiteLLMBase):
     @classmethod
     def register_model(cls, model_name: str): # Pass in model_name to register for
         """Register this client class with autogen's configuration system"""
+        import inspect
+        print(f"--- DEBUG: Location of autogen module: {inspect.getfile(autogen)}")
+        print(f"--- DEBUG: Checking for autogen.oai.ChatCompletion.register_model: {hasattr(autogen.oai.ChatCompletion, 'register_model')}")
         autogen.oai.ChatCompletion.register_model( # Use autogen.oai, not just oai
             model_name, # Register for the specific model name (e.g., "ollama/llama2")
             cls,

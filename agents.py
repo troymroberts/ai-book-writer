@@ -19,40 +19,49 @@ class BookAgents:
         self.character_developments = {}  # Track character arcs
 
     def _prepare_autogen_config(self, config: Dict) -> Dict:
-        """Prepare configuration for autogen compatibility"""
-        # Convert config to dict if it's a Pydantic model
+        """Prepare configuration for autogen compatibility - DIRECT PATCHING ATTEMPT"""
         if hasattr(config, 'dict'):
             config = config.dict()
         llm_config = get_config()
 
-        config_list = []  # Initialize as empty list
+        config_list = []
 
-        model_lower = llm_config.get("model", "").lower()  # Get model and lowercase it
+        model_lower = llm_config.get("model", "").lower()
 
-        if "ollama" in model_lower:  # Check if Ollama model is selected
+        if "ollama" in model_lower:
             config_list.append({
-                "model": llm_config.get("model"),  # Use model from config (e.g., ollama/deepseek-r1:14b)
-                "base_url": llm_config.get("base_url"),  # Use base_url from config
-                "api_key": llm_config.get("api_key"),  # Pass API key even if it's None/empty for Ollama (LiteLLM might need it, though Ollama usually doesn't)
-                "model_client_cls": "OllamaImplementation",  # Use Ollama implementation
-                "model_kwargs": {}
+                "model": llm_config.get("model"),
+                "base_url": llm_config.get("base_url"),
+                "api_key": llm_config.get("api_key"),
+                #"model_client_cls": "OllamaImplementation", # <-- REMOVE model_client_cls from config
+                "model_kwargs": {},
             })
-            OllamaImplementation.register_model(llm_config.get("model")) # <-- ADD THIS LINE: Register OllamaImplementation for the model
-            model_client_cls = OllamaImplementation # Redundant, but keep for clarity
-        else:  # Default to DeepSeek if not Ollama (or handle other models here in future)
+
+            # Direct patching of autogen.oai.ChatCompletion.create for Ollama
+            original_create = autogen.oai.ChatCompletion.create # Store original create method
+
+            def patched_create(*args, **kwargs): # Define patched create method
+                if "ollama" in kwargs.get("model", "").lower(): # Check if it's an Ollama model
+                    ollama_client = OllamaImplementation(config=llm_config) # Instantiate Ollama client DIRECTLY
+                    return ollama_client.create(*args, **kwargs) # Use Ollama client's create method
+                else:
+                    return original_create(*args, **kwargs) # Fallback to original for other models
+
+            autogen.oai.ChatCompletion.create = patched_create # <--- APPLY THE PATCH: Override create method
+
+        else:  # DeepSeek configuration (as before)
             config_list.append({
-                "model": "deepseek-chat",  # Default to deepseek-chat if not Ollama
+                "model": "deepseek-chat",
                 "api_key": llm_config.get("api_key"),
                 "base_url": llm_config.get("base_url"),
                 "model_client_cls": "DeepSeekClient",
-                "model_kwargs": {}
+                "model_kwargs": {},
             })
 
         return {
             **config,
             "config_list": config_list,
-            # Remove hardcoded DeepSeekClient - client will be dynamically chosen based on config
-            # "model_client_cls": DeepSeekClient  <- REMOVE THIS LINE
+            # "model_client_cls": DeepSeekClient, # <-- REMOVE model_client_cls from top-level config too
         }
 
     def _get_genre_style_instructions(self) -> str:
