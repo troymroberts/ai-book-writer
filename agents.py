@@ -1,4 +1,4 @@
-"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION 3 - INDENTATION FIXED"""
+"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION 4 - LOGGING ORIGINAL CREATE"""
 import autogen
 from typing import Dict, List, Optional
 from llm.factory import LLMFactory
@@ -63,12 +63,16 @@ class BookAgents:
                     logger.debug("Calling original_create from patched_create")
                     logger.debug(f"original_create args: {args}")
                     logger.debug(f"original_create kwargs: {kwargs}")
+
+                    logger.debug("About to call ORIGINAL openai.ChatCompletion.create directly (within patched_create)") # ADDED: Log before calling original create
                     if 'ollama_base_url' in kwargs: # Passing kwargs but EXCLUDING 'ollama_base_url' if present - defensive
                         kwargs_for_original = {k: v for k, v in kwargs.items() if k != 'ollama_base_url'} # Create a copy without ollama_base_url
+                        logger.debug(f"Calling ORIGINAL openai.ChatCompletion.create with kwargs (excluding ollama_base_url): {kwargs_for_original}") # ADDED: Log kwargs for original create
                         result = original_create(*args, **kwargs_for_original) # Call original create, excluding ollama_base_url
                     else:
+                        logger.debug(f"Calling ORIGINAL openai.ChatCompletion.create with ALL kwargs: {kwargs}") # ADDED: Log kwargs for original create
                         result = original_create(*args, **kwargs) # Fallback to original for other models
-                    logger.debug("Returned from original_create in patched_create")
+                    logger.debug("Returned from ORIGINAL openai.ChatCompletion.create in patched_create") # ADDED: Log after original create call
                     logger.debug(f"Result from original_create: {result}")
                     return result
 
