@@ -1,19 +1,19 @@
-# smolagents_ollama_test.py
-from smol_agents.agents.functional_agent import FunctionalAgent
-from smol_agents.llms.litellm import LiteLLMConfig, LiteLLM_LLM
+# smolagents_ollama_test.py - CORRECTED INSTALL INSTRUCTION (pip install smolagents) - SCRIPT CODE UNCHANGED
+from smolagents.agents.functional_agent import FunctionalAgent  # Correct import - smolagents (no hyphen)
+from smolagents.llms.litellm import LiteLLMConfig, LiteLLM_LLM # Correct import - smolagents (no hyphen)
 import logging
 
 # Enable DEBUG logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-logger.debug("--- Smol-Agents Ollama Test Script Started ---")
+logger.debug("--- Smolagents Ollama Test Script Started ---")
 
 # Define LiteLLMConfig for Ollama
 ollama_config = LiteLLMConfig(
     model="ollama/deepseek-r1:14b",  # Or your Ollama model
     base_url="http://localhost:11434", # Your Ollama base URL
-    api_key=None, # No API key for local Ollama
+    api_key=None, # No API key needed for local Ollama
     provider="ollama" # Explicitly set the provider to ollama for LiteLLM
 )
 
@@ -31,7 +31,7 @@ logger.debug(f"LLM Base URL: {ollama_llm.base_url}")
 logger.debug(f"LLM Provider: {ollama_llm.provider_name}")
 
 
-# Create a FunctionalAgent - simplest agent in Smol-Agents
+# Create a FunctionalAgent - simplest agent in Smolagents
 agent = FunctionalAgent(
     llm=ollama_llm, # Pass the LiteLLM_LLM instance
     name="ollama_test_agent",
@@ -51,7 +51,7 @@ logger.debug(f"Test prompt: {test_prompt}")
 try:
     response = agent.run(test_prompt)
     logger.debug("Agent run completed successfully")
-    print("\n--- Smol-Agents Ollama Test Response ---")
+    print("\n--- Smolagents Ollama Test Response ---")
     print(response)
 
 except Exception as e:
@@ -59,4 +59,4 @@ except Exception as e:
     import traceback
     traceback.print_exc()
 
-logger.debug("--- Smol-Agents Ollama Test Script Finished ---")
+logger.debug("--- Smolagents Ollama Test Script Finished ---")
