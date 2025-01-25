@@ -443,11 +443,14 @@ class BookAgents:
 
 
         for agent in agent_list:
-            print(f"Registering model client for agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__}")
             if isinstance(agent, autogen.AssistantAgent):
-                agent.register_model_client(model_client_cls=model_client_cls)
-            else:
-                print(f"Skipping register_model_client for {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} as it is not an AssistantAgent")
+                model_name_to_check = llm_config.get("model", "").lower() # Get model name for check
+                if "ollama" not in model_name_to_check: # Conditionally register client - skip for ollama
+                    print(f"Registering model client for agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__}")
+                    agent.register_model_client(model_client_cls=model_client_cls)
+                else:
+                    print(f"Skipping model client registration for Ollama agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} - using direct patching") # Log skip for Ollama
+                    print(f"Skipping register_model_client for {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} as it is not an AssistantAgent")
 
         return {
             "story_planner": story_planner,
