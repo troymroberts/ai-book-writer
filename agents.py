@@ -41,11 +41,29 @@ class BookAgents:
             original_create = autogen.oai.ChatCompletion.create # Store original create method
 
             def patched_create(*args, **kwargs): # Define patched create method
+                logger.debug("Patched create function called") # ADDED: Log when patched_create is called
+                logger.debug(f"Patched create kwargs: {kwargs}") # ADDED: Log kwargs received
+                logger.debug(f"Type of original_create: {type(original_create)}") # ADDED: Log type of original_create
+
                 if "ollama" in kwargs.get("model", "").lower(): # Check if it's an Ollama model
+                    logger.debug("Ollama model detected in patched create") # ADDED: Log Ollama detection
                     ollama_client = OllamaImplementation(config=llm_config) # Instantiate Ollama client DIRECTLY
-                    return ollama_client.create(*args, **kwargs) # Use Ollama client's create method
+                    logger.debug("Calling ollama_client.create from patched_create") # ADDED: Log before ollama_client.create call
+                    result = ollama_client.create(*args, **kwargs) # Use Ollama client's create method
+                    logger.debug("Returned from ollama_client.create in patched_create") # ADDED: Log after ollama_client.create call
+                    return result
                 else:
-                    return original_create(*args, **kwargs) # Fallback to original for other models
+                    logger.debug("Non-Ollama model in patched create - falling back to original create") # ADDED: Log fallback
+                    if 'ollama_base_url' in kwargs: # ADDED: Check for unexpected ollama_base_url
+                        logger.warning("Unexpected 'ollama_base_url' in kwargs for non-Ollama model create call - about to call original_create")
+                    logger.debug("Calling original_create from patched_create") # ADDED: Log before original_create call
+                    if 'ollama_base_url' in kwargs: # Passing kwargs but EXCLUDING 'ollama_base_url' if present - defensive
+                        kwargs_for_original = {k: v for k, v in kwargs.items() if k != 'ollama_base_url'} # Create a copy without ollama_base_url
+                        result = original_create(*args, **kwargs_for_original) # Call original create, excluding ollama_base_url
+                    else:
+                        result = original_create(*args, **kwargs) # Fallback to original for other models
+                    logger.debug("Returned from original_create in patched_create") # ADDED: Log after original_create call
+                    return result
 
             autogen.oai.ChatCompletion.create = patched_create # <--- APPLY THE PATCH: Override create method
 
