@@ -6,6 +6,12 @@ print("--- main.py script started ---")
 print("--- Debugging main.py: CUSTOM_OUTLINE check ---")
 import os
 import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+logger.debug("--- DEBUG: Main script started in DEBUG mode ---")  # Add this line
+
+print("--- Standard output test from main.py ---") # Keep this print
 from logging.config import dictConfig
 import json
 from config import get_settings
