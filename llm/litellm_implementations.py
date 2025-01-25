@@ -1,4 +1,4 @@
-"""Implementations for various LiteLLM-based models, including Ollama, with debugging"""
+"""Implementations for various LiteLLM-based models, including Ollama, with debugging - CORRECTED REGISTER_MODEL"""
 from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
@@ -81,14 +81,11 @@ class GroqImplementation(LiteLLMBase):
         )
 
 class OllamaImplementation(LiteLLMBase):
-    """Implementation for Ollama models - DEBUGGING ADDED"""
+    """Implementation for Ollama models - DEBUGGING ADDED - CORRECTED REGISTER_MODEL"""
 
     @classmethod
     def register_model(cls, model_name: str): # Pass in model_name to register for
         """Register this client class with autogen's configuration system"""
-        import inspect
-        print(f"--- DEBUG: Location of autogen module: {inspect.getfile(autogen)}")
-        print(f"--- DEBUG: Checking for autogen.oai.ChatCompletion.register_model: {hasattr(autogen.oai.ChatCompletion, 'register_model')}")
         autogen.oai.ChatCompletion.register_model( # Use autogen.oai, not just oai
             model_name, # Register for the specific model name (e.g., "ollama/llama2")
             cls,
@@ -124,8 +121,10 @@ class OllamaImplementation(LiteLLMBase):
         )
 
     def create(self, params: Dict) -> SimpleNamespace: # Modified create method
-        """Adapt generate to return SimpleNamespace for autogen - DEBUGGING ADDED"""
+        """Adapt generate to return SimpleNamespace for autogen - DEBUGGING ADDED - LOGGING ENDPOINT"""
         logger.debug("OllamaImplementation create method called") # ADDED: Log entry to OllamaImplementation.create
+        effective_url = f"{self.base_url}/chat/completions" # Construct intended URL
+        logger.debug(f"OllamaImplementation create - intended API URL: {effective_url}") # ADDED: Log the intended URL
         logger.debug(f"OllamaImplementation create params: {params}") # ADDED: Log params in OllamaImplementation.create
         logger.debug(f"OllamaImplementation base_url: {self.base_url}") # ADDED: Log base_url in OllamaImplementation.create
         # model_name_for_litellm = self.model.split('/')[-1].split(':')[0] # No longer needed - use full model string
