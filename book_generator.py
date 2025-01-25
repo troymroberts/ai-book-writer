@@ -225,11 +225,11 @@ class BookGenerator:
             # No specific agent call here as it's part of the group chat flow
 
             self._process_chapter_results(chapter_number, groupchat.messages)
-            
+
             # Log extracted content before saving
             final_content = self._extract_final_scene(groupchat.messages)
             logger.info(f"Extracted content for chapter {chapter_number}: {final_content[:500]}...")
-            
+
             chapter_file = os.path.join(self.output_dir, f"chapter_{chapter_number:02d}.txt")
             if not os.path.exists(chapter_file):
                 logger.debug(f"Chapter file missing: {chapter_file}")
@@ -304,9 +304,15 @@ class BookGenerator:
                 llm_config=self.agent_config
             )
 
+            # Exclude ollama_base_url from retry config to avoid TypeError - Hypothesis 1 Fix
+            retry_llm_config = {k: v for k, v in self.agent_config.items() if k != 'ollama_base_url'}
+
             retry_prompt = f"""Emergency chapter generation for Chapter {chapter_number}.
 
 {prompt}
+
+Retry LLM Config (no ollama_base_url):
+{retry_llm_config}
 
 Please generate this chapter in two steps:
 1. Story Planner: Create a basic outline (tag: PLAN)
@@ -314,8 +320,12 @@ Please generate this chapter in two steps:
 
 Keep it simple and direct."""
 
+            logger.debug(f"Retry Prompt for Chapter {chapter_number}: {retry_prompt}") # ADDED: Log retry_prompt
+            logger.debug(f"Retry LLM Config for Chapter {chapter_number}: {retry_llm_config}") # ADDED: Log retry_llm_config
+
             self.agents["user_proxy"].initiate_chat(
                 manager,
+                llm_config=retry_llm_config, # Use modified config WITHOUT ollama_base_url - Hypothesis 1 Fix
                 message=retry_prompt
             )
 
