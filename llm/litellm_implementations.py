@@ -1,3 +1,4 @@
+"""Implementations for various LiteLLM-based models, including Ollama, with debugging"""
 from typing import Optional, Dict, Any, List
 import os
 from .litellm_base import LiteLLMBase
@@ -5,6 +6,9 @@ import litellm  # Ensure litellm is imported at the top
 from .deepseek_client import DeepSeekClient
 from types import SimpleNamespace
 import autogen
+import logging
+
+logger = logging.getLogger(__name__)  # Get logger
 
 class OpenAIImplementation(LiteLLMBase):
     """Implementation for OpenAI models"""
@@ -77,7 +81,7 @@ class GroqImplementation(LiteLLMBase):
         )
 
 class OllamaImplementation(LiteLLMBase):
-    """Implementation for Ollama models"""
+    """Implementation for Ollama models - DEBUGGING ADDED"""
 
     @classmethod
     def register_model(cls, model_name: str): # Pass in model_name to register for
@@ -120,7 +124,10 @@ class OllamaImplementation(LiteLLMBase):
         )
 
     def create(self, params: Dict) -> SimpleNamespace: # Modified create method
-        """Adapt generate to return SimpleNamespace for autogen"""
+        """Adapt generate to return SimpleNamespace for autogen - DEBUGGING ADDED"""
+        logger.debug("OllamaImplementation create method called") # ADDED: Log entry to OllamaImplementation.create
+        logger.debug(f"OllamaImplementation create params: {params}") # ADDED: Log params in OllamaImplementation.create
+        logger.debug(f"OllamaImplementation base_url: {self.base_url}") # ADDED: Log base_url in OllamaImplementation.create
         # model_name_for_litellm = self.model.split('/')[-1].split(':')[0] # No longer needed - use full model string
         response = litellm.completion( # Call litellm.completion directly, passing FULL model string
             model=self.model, # Use FULL model string, e.g., "ollama/deepseek-r1:14b" # Modified line - use full model string NOW
