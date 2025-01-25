@@ -1,4 +1,4 @@
-"""Define the agents used in the book generation system with improved context management and specialized roles"""
+"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION"""
 import autogen
 from typing import Dict, List, Optional
 from llm.factory import LLMFactory
@@ -42,6 +42,7 @@ class BookAgents:
 
             def patched_create(*args, **kwargs): # Define patched create method
                 logger.debug("Patched create function called") # ADDED: Log when patched_create is called
+                logger.debug(f"Patched create args: {args}") # ADDED: Log args received
                 logger.debug(f"Patched create kwargs: {kwargs}") # ADDED: Log kwargs received
                 logger.debug(f"Type of original_create: {type(original_create)}") # ADDED: Log type of original_create
 
@@ -49,23 +50,31 @@ class BookAgents:
                     logger.debug("Ollama model detected in patched create") # ADDED: Log Ollama detection
                     ollama_client = OllamaImplementation(config=llm_config) # Instantiate Ollama client DIRECTLY
                     logger.debug("Calling ollama_client.create from patched_create") # ADDED: Log before ollama_client.create call
+                    logger.debug(f"ollama_client.create args: {args}") # ADDED: Log args for ollama_client.create
+                    logger.debug(f"ollama_client.create kwargs: {kwargs}") # ADDED: Log kwargs for ollama_client.create
                     result = ollama_client.create(*args, **kwargs) # Use Ollama client's create method
                     logger.debug("Returned from ollama_client.create in patched_create") # ADDED: Log after ollama_client.create call
+                    logger.debug(f"Result from ollama_client.create: {result}") # ADDED: Log result from ollama_client.create
                     return result
                 else:
                     logger.debug("Non-Ollama model in patched create - falling back to original create") # ADDED: Log fallback
                     if 'ollama_base_url' in kwargs: # ADDED: Check for unexpected ollama_base_url
                         logger.warning("Unexpected 'ollama_base_url' in kwargs for non-Ollama model create call - about to call original_create")
                     logger.debug("Calling original_create from patched_create") # ADDED: Log before original_create call
+                    logger.debug(f"original_create args: {args}") # ADDED: Log args for original_create
+                    logger.debug(f"original_create kwargs: {kwargs}") # ADDED: Log kwargs for original_create
                     if 'ollama_base_url' in kwargs: # Passing kwargs but EXCLUDING 'ollama_base_url' if present - defensive
                         kwargs_for_original = {k: v for k, v in kwargs.items() if k != 'ollama_base_url'} # Create a copy without ollama_base_url
                         result = original_create(*args, **kwargs_for_original) # Call original create, excluding ollama_base_url
                     else:
                         result = original_create(*args, **kwargs) # Fallback to original for other models
                     logger.debug("Returned from original_create in patched_create") # ADDED: Log after original_create call
+                    logger.debug(f"Result from original_create: {result}") # ADDED: Log result from original_create
                     return result
 
             autogen.oai.ChatCompletion.create = patched_create # <--- APPLY THE PATCH: Override create method
++           logger.debug("autogen.oai.ChatCompletion.create patched successfully in _prepare_autogen_config") # ADDED: Verify patch application
+
 
         else:  # DeepSeek configuration (as before)
             config_list.append({
@@ -131,6 +140,11 @@ class BookAgents:
         """Create and return all agents needed for book generation with specialized roles"""
         outline_context = self._format_outline_context()
 
++       logger.debug("Entering BookAgents.create_agents") # ADDED: Log entry to create_agents
++       logger.debug(f"Initial prompt: {initial_prompt}") # ADDED: Log initial_prompt
++       logger.debug(f"Number of chapters: {num_chapters}") # ADDED: Log num_chapters
++       logger.debug(f"Agent config: {self.agent_config}") # ADDED: Log agent_config
+
         # Memory Keeper: Maintains story continuity and context
         memory_keeper = autogen.AssistantAgent(
             name="memory_keeper",
@@ -158,6 +172,7 @@ class BookAgents:
         if memory_keeper is None:
             logger.error("Failed to create memory_keeper agent.")
             return None
++       logger.debug("Created memory_keeper agent") # ADDED: Log after creation
 
         # Story Planner - Focuses on high-level story structure
         story_planner = autogen.AssistantAgent(
@@ -195,6 +210,7 @@ class BookAgents:
         if story_planner is None:
             logger.error("Failed to create story_planner agent.")
             return None
++       logger.debug("Created story_planner agent") # ADDED: Log after creation
 
 
         # Outline Creator - Creates detailed chapter outlines
@@ -245,6 +261,7 @@ class BookAgents:
         if outline_creator is None:
             logger.error("Failed to create outline_creator agent.")
             return None
++       logger.debug("Created outline_creator agent") # ADDED: Log after creation
 
         # Setting Builder: Creates and maintains the story setting (Renamed and enhanced World Builder)
         setting_builder = autogen.AssistantAgent(
@@ -289,6 +306,7 @@ class BookAgents:
         if setting_builder is None:
             logger.error("Failed to create setting_builder agent.")
             return None
++       logger.debug("Created setting_builder agent") # ADDED: Log after creation
 
         # Character Agent: Develops and maintains character details (New Agent)
         character_agent = autogen.AssistantAgent(
@@ -327,6 +345,7 @@ class BookAgents:
         if character_agent is None:
             logger.error("Failed to create character_agent agent.")
             return None
++       logger.debug("Created character_agent agent") # ADDED: Log after creation
 
         # Plot Agent: Focuses on plot details and pacing within chapters (New Agent)
         plot_agent = autogen.AssistantAgent(
@@ -362,6 +381,7 @@ class BookAgents:
         if plot_agent is None:
             logger.error("Failed to create plot_agent agent.")
             return None
++       logger.debug("Created plot_agent agent") # ADDED: Log after creation
 
         # Writer: Generates the actual prose
         writer_message = f"""You are an expert creative writer who brings scenes to life with vivid prose, compelling characters, and engaging plots.
@@ -399,6 +419,7 @@ class BookAgents:
         if writer is None:
             logger.error("Failed to create writer agent.")
             return None
++       logger.debug("Created writer agent") # ADDED: Log after creation
 
         # Editor: Reviews and improves content
         editor = autogen.AssistantAgent(
@@ -435,6 +456,7 @@ class BookAgents:
         if editor is None:
             logger.error("Failed to create editor agent.")
             return None
++       logger.debug("Created editor agent") # ADDED: Log after creation
 
         # User Proxy: Manages the interaction
         user_proxy = autogen.UserProxyAgent(
@@ -446,6 +468,7 @@ class BookAgents:
         if user_proxy is None:
             logger.error("Failed to create user_proxy agent.")
             return None
++       logger.debug("Created user_proxy agent") # ADDED: Log after creation
 
         agent_list = [memory_keeper, story_planner, outline_creator, setting_builder, character_agent, plot_agent, writer, editor, user_proxy]  # List of agents
 
@@ -459,6 +482,7 @@ class BookAgents:
         else:
             model_client_cls = DeepSeekClient  # Default to DeepSeek for other models (or adjust as needed)
 
++       logger.debug(f"LLM Model class to be registered: {model_client_cls}") # ADDED: Log model client class
 
         for agent in agent_list:
             if isinstance(agent, autogen.AssistantAgent):
@@ -469,7 +493,9 @@ class BookAgents:
                 else:
                     print(f"Skipping model client registration for Ollama agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} - using direct patching") # Log skip for Ollama
                     print(f"Skipping register_model_client for {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} as it is not an AssistantAgent")
++           logger.debug(f"Agent {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} llm_config after registration: {agent.llm_config}") # ADDED: Log agent llm_config after registration
 
++       logger.debug("Exiting BookAgents.create_agents and returning agents dict") # ADDED: Log exit of create_agents
         return {
             "story_planner": story_planner,
             "setting_builder": setting_builder,  # Renamed and using setting_builder now
