@@ -1,4 +1,4 @@
-"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION - INDENTATION FIXED"""
+"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION 3 - INDENTATION FIXED"""
 import autogen
 from typing import Dict, List, Optional
 from llm.factory import LLMFactory
@@ -41,42 +41,42 @@ class BookAgents:
             original_create = autogen.oai.ChatCompletion.create # Store original create method
 
             def patched_create(*args, **kwargs): # Define patched create method
-                logger.debug("Patched create function called") # ADDED: Log when patched_create is called
-                logger.debug(f"Patched create args: {args}") # ADDED: Log args received
-                logger.debug(f"Patched create kwargs: {kwargs}") # ADDED: Log kwargs received
-                logger.debug(f"Type of original_create: {type(original_create)}") # ADDED: Log type of original_create
+                logger.debug("Patched create function called")
+                logger.debug(f"Patched create args: {args}")
+                logger.debug(f"Patched create kwargs: {kwargs}")
+                logger.debug(f"Type of original_create: {type(original_create)}")
 
                 if "ollama" in kwargs.get("model", "").lower(): # Check if it's an Ollama model
-                    logger.debug("Ollama model detected in patched create") # ADDED: Log Ollama detection
+                    logger.debug("Ollama model detected in patched create")
                     ollama_client = OllamaImplementation(config=llm_config) # Instantiate Ollama client DIRECTLY
-                    logger.debug("Calling ollama_client.create from patched_create") # ADDED: Log before ollama_client.create call
-                    logger.debug(f"ollama_client.create args: {args}") # ADDED: Log args for ollama_client.create
-                    logger.debug(f"ollama_client.create kwargs: {kwargs}") # ADDED: Log kwargs for ollama_client.create
+                    logger.debug("Calling ollama_client.create from patched_create")
+                    logger.debug(f"ollama_client.create args: {args}")
+                    logger.debug(f"ollama_client.create kwargs: {kwargs}")
                     result = ollama_client.create(*args, **kwargs) # Use Ollama client's create method
-                    logger.debug("Returned from ollama_client.create in patched_create") # ADDED: Log after ollama_client.create call
-                    logger.debug(f"Result from ollama_client.create: {result}") # ADDED: Log result from ollama_client.create
+                    logger.debug("Returned from ollama_client.create in patched_create")
+                    logger.debug(f"Result from ollama_client.create: {result}")
                     return result
                 else:
-                    logger.debug("Non-Ollama model in patched create - falling back to original create") # ADDED: Log fallback
-                    if 'ollama_base_url' in kwargs: # ADDED: Check for unexpected ollama_base_url
+                    logger.debug("Non-Ollama model in patched create - falling back to original create")
+                    if 'ollama_base_url' in kwargs:
                         logger.warning("Unexpected 'ollama_base_url' in kwargs for non-Ollama model create call - about to call original_create")
-                    logger.debug("Calling original_create from patched_create") # ADDED: Log before original_create call
-                    logger.debug(f"original_create args: {args}") # ADDED: Log args for original_create
-                    logger.debug(f"original_create kwargs: {kwargs}") # ADDED: Log kwargs for original_create
+                    logger.debug("Calling original_create from patched_create")
+                    logger.debug(f"original_create args: {args}")
+                    logger.debug(f"original_create kwargs: {kwargs}")
                     if 'ollama_base_url' in kwargs: # Passing kwargs but EXCLUDING 'ollama_base_url' if present - defensive
                         kwargs_for_original = {k: v for k, v in kwargs.items() if k != 'ollama_base_url'} # Create a copy without ollama_base_url
                         result = original_create(*args, **kwargs_for_original) # Call original create, excluding ollama_base_url
                     else:
                         result = original_create(*args, **kwargs) # Fallback to original for other models
-                    logger.debug("Returned from original_create in patched_create") # ADDED: Log after original_create call
-                    logger.debug(f"Result from original_create: {result}") # ADDED: Log result from original_create
+                    logger.debug("Returned from original_create in patched_create")
+                    logger.debug(f"Result from original_create: {result}")
                     return result
 
             autogen.oai.ChatCompletion.create = patched_create # <--- APPLY THE PATCH: Override create method
-            logger.debug("autogen.oai.ChatCompletion.create patched successfully in _prepare_autogen_config") # ADDED: Verify patch application
+            logger.debug("autogen.oai.ChatCompletion.create patched successfully in _prepare_autogen_config")
 
 
-        else:  # DeepSeek configuration (as before) # <----- LINE 79 - CORRECTED INDENTATION HERE
+        else:  # DeepSeek configuration (as before)
             config_list.append({
                 "model": "deepseek-chat",
                 "api_key": llm_config.get("api_key"),
