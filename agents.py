@@ -1,4 +1,4 @@
-"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION"""
+"""Define the agents used in the book generation system with improved context management and specialized roles - DEBUGGING VERSION - INDENTATION FIXED"""
 import autogen
 from typing import Dict, List, Optional
 from llm.factory import LLMFactory
@@ -73,10 +73,10 @@ class BookAgents:
                     return result
 
             autogen.oai.ChatCompletion.create = patched_create # <--- APPLY THE PATCH: Override create method
-+           logger.debug("autogen.oai.ChatCompletion.create patched successfully in _prepare_autogen_config") # ADDED: Verify patch application
+            logger.debug("autogen.oai.ChatCompletion.create patched successfully in _prepare_autogen_config") # ADDED: Verify patch application
 
 
-        else:  # DeepSeek configuration (as before)
+        else:  # DeepSeek configuration (as before) # <----- LINE 79 - CORRECTED INDENTATION HERE
             config_list.append({
                 "model": "deepseek-chat",
                 "api_key": llm_config.get("api_key"),
@@ -140,10 +140,10 @@ class BookAgents:
         """Create and return all agents needed for book generation with specialized roles"""
         outline_context = self._format_outline_context()
 
-+       logger.debug("Entering BookAgents.create_agents") # ADDED: Log entry to create_agents
-+       logger.debug(f"Initial prompt: {initial_prompt}") # ADDED: Log initial_prompt
-+       logger.debug(f"Number of chapters: {num_chapters}") # ADDED: Log num_chapters
-+       logger.debug(f"Agent config: {self.agent_config}") # ADDED: Log agent_config
+        logger.debug("Entering BookAgents.create_agents") # ADDED: Log entry to create_agents
+        logger.debug(f"Initial prompt: {initial_prompt}") # ADDED: Log initial_prompt
+        logger.debug(f"Number of chapters: {num_chapters}") # ADDED: Log num_chapters
+        logger.debug(f"Agent config: {self.agent_config}") # ADDED: Log agent_config
 
         # Memory Keeper: Maintains story continuity and context
         memory_keeper = autogen.AssistantAgent(
@@ -172,7 +172,7 @@ class BookAgents:
         if memory_keeper is None:
             logger.error("Failed to create memory_keeper agent.")
             return None
-+       logger.debug("Created memory_keeper agent") # ADDED: Log after creation
+        logger.debug("Created memory_keeper agent") # ADDED: Log after creation
 
         # Story Planner - Focuses on high-level story structure
         story_planner = autogen.AssistantAgent(
@@ -210,7 +210,7 @@ class BookAgents:
         if story_planner is None:
             logger.error("Failed to create story_planner agent.")
             return None
-+       logger.debug("Created story_planner agent") # ADDED: Log after creation
+        logger.debug("Created story_planner agent") # ADDED: Log after creation
 
 
         # Outline Creator - Creates detailed chapter outlines
@@ -261,7 +261,7 @@ class BookAgents:
         if outline_creator is None:
             logger.error("Failed to create outline_creator agent.")
             return None
-+       logger.debug("Created outline_creator agent") # ADDED: Log after creation
+        logger.debug("Created outline_creator agent") # ADDED: Log after creation
 
         # Setting Builder: Creates and maintains the story setting (Renamed and enhanced World Builder)
         setting_builder = autogen.AssistantAgent(
@@ -306,7 +306,7 @@ class BookAgents:
         if setting_builder is None:
             logger.error("Failed to create setting_builder agent.")
             return None
-+       logger.debug("Created setting_builder agent") # ADDED: Log after creation
+        logger.debug("Created setting_builder agent") # ADDED: Log after creation
 
         # Character Agent: Develops and maintains character details (New Agent)
         character_agent = autogen.AssistantAgent(
@@ -345,7 +345,7 @@ class BookAgents:
         if character_agent is None:
             logger.error("Failed to create character_agent agent.")
             return None
-+       logger.debug("Created character_agent agent") # ADDED: Log after creation
+        logger.debug("Created character_agent agent") # ADDED: Log after creation
 
         # Plot Agent: Focuses on plot details and pacing within chapters (New Agent)
         plot_agent = autogen.AssistantAgent(
@@ -381,7 +381,7 @@ class BookAgents:
         if plot_agent is None:
             logger.error("Failed to create plot_agent agent.")
             return None
-+       logger.debug("Created plot_agent agent") # ADDED: Log after creation
+        logger.debug("Created plot_agent agent") # ADDED: Log after creation
 
         # Writer: Generates the actual prose
         writer_message = f"""You are an expert creative writer who brings scenes to life with vivid prose, compelling characters, and engaging plots.
@@ -419,7 +419,7 @@ class BookAgents:
         if writer is None:
             logger.error("Failed to create writer agent.")
             return None
-+       logger.debug("Created writer agent") # ADDED: Log after creation
+        logger.debug("Created writer agent") # ADDED: Log after creation
 
         # Editor: Reviews and improves content
         editor = autogen.AssistantAgent(
@@ -456,7 +456,7 @@ class BookAgents:
         if editor is None:
             logger.error("Failed to create editor agent.")
             return None
-+       logger.debug("Created editor agent") # ADDED: Log after creation
+        logger.debug("Created editor agent") # ADDED: Log after creation
 
         # User Proxy: Manages the interaction
         user_proxy = autogen.UserProxyAgent(
@@ -468,7 +468,7 @@ class BookAgents:
         if user_proxy is None:
             logger.error("Failed to create user_proxy agent.")
             return None
-+       logger.debug("Created user_proxy agent") # ADDED: Log after creation
+        logger.debug("Created user_proxy agent") # ADDED: Log after creation
 
         agent_list = [memory_keeper, story_planner, outline_creator, setting_builder, character_agent, plot_agent, writer, editor, user_proxy]  # List of agents
 
@@ -482,7 +482,7 @@ class BookAgents:
         else:
             model_client_cls = DeepSeekClient  # Default to DeepSeek for other models (or adjust as needed)
 
-+       logger.debug(f"LLM Model class to be registered: {model_client_cls}") # ADDED: Log model client class
+        logger.debug(f"LLM Model class to be registered: {model_client_cls}") # ADDED: Log model client class
 
         for agent in agent_list:
             if isinstance(agent, autogen.AssistantAgent):
@@ -493,9 +493,9 @@ class BookAgents:
                 else:
                     print(f"Skipping model client registration for Ollama agent: {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} - using direct patching") # Log skip for Ollama
                     print(f"Skipping register_model_client for {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} as it is not an AssistantAgent")
-+           logger.debug(f"Agent {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} llm_config after registration: {agent.llm_config}") # ADDED: Log agent llm_config after registration
+            logger.debug(f"Agent {agent.name if hasattr(agent, 'name') else agent.__class__.__name__} llm_config after registration: {agent.llm_config}") # ADDED: Log agent llm_config after registration
 
-+       logger.debug("Exiting BookAgents.create_agents and returning agents dict") # ADDED: Log exit of create_agents
+        logger.debug("Exiting BookAgents.create_agents and returning agents dict") # ADDED: Log exit of create_agents
         return {
             "story_planner": story_planner,
             "setting_builder": setting_builder,  # Renamed and using setting_builder now
